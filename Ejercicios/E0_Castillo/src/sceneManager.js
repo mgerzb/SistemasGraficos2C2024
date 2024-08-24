@@ -92,8 +92,28 @@ export class SceneManager {
 		this.baseScene.add(lakeA);
 		this.baseScene.add(lakeB);
 		
-		//Three
+		//Tree
+		const trunkGeometry = new THREE.CylinderGeometry(0.08,0.13,0.5,32);
+		const trunkMaterial = new THREE.MeshBasicMaterial({ color: 0x4d2600});
 
+		const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+		trunk.position.set(-2, 0.25, 2);
+		this.baseScene.add(trunk);
+
+		// tree leafs
+		const leafGeometry = new THREE.SphereGeometry( 0.35, 32, 16 );
+		const leafMaterial = new THREE.MeshBasicMaterial( { color: 0x006600 } );
+		const leafA = new THREE.Mesh( leafGeometry, leafMaterial );
+		const leafB = new THREE.Mesh( leafGeometry, leafMaterial );
+		const leafC = new THREE.Mesh( leafGeometry, leafMaterial );
+
+		leafA.position.set(-2, 0.75, 2);
+		leafB.position.set(-2.15, 0.95, 2);
+		leafC.position.set(-1.85, 1.15, 1.9);
+
+		this.baseScene.add( leafA );
+		this.baseScene.add( leafB );
+		this.baseScene.add( leafC );
 	}
 
 	addGridHelper()
