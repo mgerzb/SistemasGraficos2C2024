@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import * as dat from 'dat.gui';
 
 import { SceneManager } from './sceneManager.js';
 let scene, camera, renderer, container, sceneManager;
@@ -35,6 +36,16 @@ function animate() {
 	renderer.render(scene, camera);
 }
 
+function setupUI(Manager)
+{
+	let gui = new dat.GUI();
+	let f1 = gui.addFolder('Helpers');
+	
+	f1.add(Manager, 'toggleGridHelper').name('Grid');
+	f1.add(Manager, 'toggleAxesHelper').name('Axis');
+}
+
 setupThreeJs();
 sceneManager = new SceneManager(scene);
+setupUI(sceneManager);
 animate();
