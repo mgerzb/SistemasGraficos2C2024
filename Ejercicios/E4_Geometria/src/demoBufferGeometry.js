@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 import { createCylinder, createClosedCylinder } from './cylinder.js';
 import { createSphere } from './sphere.js';
+import { createPlane } from './plane.js';
 
 import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
 
@@ -30,10 +31,15 @@ function setupThreeJs() {
 	directionalLight.position.set(0, 0, 2);
 
 	const pointLight = new THREE.PointLight(0xffffff, 10);
-	pointLight.position.set(3, 1, 0);
+	pointLight.position.set(3, 5, 0);
 	scene.add(pointLight);
 	let pointLightHelper = new THREE.PointLightHelper(pointLight, 0.2);
 	scene.add(pointLightHelper);
+	
+	const pointLight2 = new THREE.PointLight(0xffffff, 10);
+	pointLight2.position.set(-2, 2, -2);
+	let pointLightHelper2 = new THREE.PointLightHelper(pointLight2, 0.2);
+	scene.add(pointLightHelper2);
 
 	const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x000000, 0.25);
 	//scene.add(hemisphereLight);
@@ -71,12 +77,20 @@ function buildScene() {
 	//scene.add(normalMeshHelper);
 
 	//scene.add(cylinder);
+	
+	let geoplane = createPlane(1, 1, 20, 40);
+	
+	const plane = new THREE.Mesh(geoplane, material);
+	plane.position.x = -2;
+	plane.position.z = -2;
+	scene.add(plane);
 
 	const sphereGeometry = createSphere(2,4,4); //new THREE.SphereGeometry(1, 16, 16);
 	const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: true });
 	const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 
 	let sphereNormalHelper = new VertexNormalsHelper(sphere, 0.2, 0x00ff00, 1);
+	
 	//scene.add(sphereNormalHelper);
 
 	scene.add(sphere);

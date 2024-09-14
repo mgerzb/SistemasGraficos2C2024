@@ -37,11 +37,20 @@ export function createSphere(radius, radialSegments, heightSegments) {
             let normal = new THREE.Vector3(x, y, z).normalize();
 			normals.push(normal);
 			uvs.push(u, v);
+			
+			if (i-1 < 1)
+			{
+				let a = (i-1) * (radialSegments + 1);
+				let b = a + ( (i-1) * radialSegments) + 1 + j;
+				let c = a + ( (i-1) * radialSegments) + 2 + j;
+				
+				indices.push(a, c, b);
+			}
    //
 			//We stop before the last row and last column
-			if (i < heightSegments && j < radialSegments) {
+			if (i < heightSegments && j <= radialSegments) {
 				// The indices of the vertices
-				const a = i * (radialSegments + 1) + j;
+				const a = (i-1) * (radialSegments + 1) + j;
 				const b = a + radialSegments + 1;
 				const c = a + radialSegments + 2;
 				const d = a + 1;
