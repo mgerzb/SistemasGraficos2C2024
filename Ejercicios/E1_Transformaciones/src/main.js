@@ -84,7 +84,7 @@ function buildScene() {
 	scene.add(text);
 
 	const loader = new GLTFLoader();
-	loader.load('/models/targets.glb', function (gltf) {
+	loader.load(import.meta.env.VITE_TARGETS, function (gltf) {
 		const targets = gltf.scene;
 		scene.add(targets);
 	});
