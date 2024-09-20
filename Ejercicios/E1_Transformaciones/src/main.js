@@ -28,7 +28,9 @@ function setupThreeJs() {
 
 function loadFont() {
 	const loader = new FontLoader();
-	loader.load('fonts/gentilis_regular.typeface.json', function (response) {
+	console.log(import.meta.env.VITE_FONTS_PATH);
+	console.log(import.meta.env.MOD);
+	loader.load(import.meta.env.VITE_FONTS_PATH, function (response) {
 		font = response;
 		buildScene();
 	});
