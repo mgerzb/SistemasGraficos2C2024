@@ -3,15 +3,15 @@ import { loadModels } from './loader.js';
 //import { armarSolucion } from './solucion.ignore.js';
 
 const modelPaths = [
-	'/models/antebrazo.dae',
-	'/models/brazo.dae',
-	'/models/cabina.dae',
-	'/models/chasis.dae',
-	'/models/cubierta.dae',
-	'/models/eje.dae',
-	'/models/llanta.dae',
-	'/models/pala.dae',
-	'/models/tuerca.dae',
+	import.meta.env.VITE_MODELS_PATH + '/antebrazo.dae',
+	import.meta.env.VITE_MODELS_PATH + '/brazo.dae',
+	import.meta.env.VITE_MODELS_PATH + '/cabina.dae',
+	import.meta.env.VITE_MODELS_PATH + '/chasis.dae',
+	import.meta.env.VITE_MODELS_PATH + '/cubierta.dae',
+	import.meta.env.VITE_MODELS_PATH + '/eje.dae',
+	import.meta.env.VITE_MODELS_PATH + '/llanta.dae',
+	import.meta.env.VITE_MODELS_PATH + '/pala.dae',
+	import.meta.env.VITE_MODELS_PATH + '/tuerca.dae',
 ];
 
 const ADD_HELPERS = false;
