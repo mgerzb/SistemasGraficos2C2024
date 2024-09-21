@@ -60,7 +60,7 @@ export class SolarSystem {
 
 	loadModels() {
 		const loader = new GLTFLoader();
-		loader.load('models/solarSystem.glb', (gltf) => {
+		loader.load(import.meta.env.VITE_MODELS_PATH + '/solarSystem.glb', (gltf) => {
 			// Callback function when the model is loaded
 			this.onLoadComplete(gltf);
 		});
