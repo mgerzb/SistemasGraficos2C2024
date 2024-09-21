@@ -52,7 +52,7 @@ export class SolarSystem {
 		// Load the solar system model
 
 		const textureLoader = new THREE.TextureLoader();
-		this.envMapTexture = textureLoader.load('maps/envMap1.jpg', (texture) => {
+		this.envMapTexture = textureLoader.load(import.meta.env.VITE_MAPS_PATH + '/envMap1.jpg', (texture) => {
 			texture.mapping = THREE.EquirectangularReflectionMapping;
 			this.loadModels();
 		});
