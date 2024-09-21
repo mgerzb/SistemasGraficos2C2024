@@ -14,7 +14,7 @@ const modelPaths = [
 	'/models/tuerca.dae',
 ];
 
-const ADD_HELPERS = true;
+const ADD_HELPERS = false;
 
 export class SceneManager {
 	path;
@@ -143,13 +143,15 @@ export class SceneManager {
 
 		this.llanta.geometry.computeBoundingSphere();
 		let rad = this.llanta.geometry.boundingSphere.radius/2;
+		let nuevaT = this.tuerca;
 		for(let i = 0.5; i < Math.PI*2 + 0.5; i+=Math.PI/4)
 		{
-				let nuevaT = this.tuerca.clone();
 				nuevaT.position.y = Math.cos(i) * rad;
 				nuevaT.position.x = Math.sin(i) * rad;
 				nuevaT.position.z = 3;
 				rueda.add(nuevaT);
+				if (i + Math.PI/4 < Math.PI*2)
+					nuevaT = this.tuerca.clone();
 		};
 
 		return rueda;
@@ -176,9 +178,9 @@ export class SceneManager {
 		this.trenTrasero.add(this.eje.clone());
 
 		this.trenDelantero.position.x = 20;
-		this.trenDelantero.position.y = -5;
+		this.trenDelantero.position.y = 5;
 		this.trenTrasero.position.x = -20;
-		this.trenTrasero.position.y = -5;
+		this.trenTrasero.position.y = 5;
 
 		this.scene.add(this.trenDelantero);
 		this.scene.add(this.trenTrasero);
