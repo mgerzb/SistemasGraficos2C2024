@@ -38,7 +38,7 @@ export function createSphere(radius, radialSegments, heightSegments) {
 			normals.push(normal);
 			uvs.push(u, v);
 			
-			if (i-1 < 1)
+			if (i-1 < 1 & j < radialSegments)
 			{
 				let a = (i-1) * (radialSegments + 1);
 				let b = a + ( (i-1) * radialSegments) + 1 + j;
@@ -48,16 +48,16 @@ export function createSphere(radius, radialSegments, heightSegments) {
 			}
    //
 			//We stop before the last row and last column
-			if (i < heightSegments && j <= radialSegments) {
-				// The indices of the vertices
-				const a = (i-1) * (radialSegments + 1) + j;
-				const b = a + radialSegments + 1;
-				const c = a + radialSegments + 2;
-				const d = a + 1;
-
-				indices.push(a, d, b);
-				indices.push(b, d, c);
-			}
+			// if (i < heightSegments && j <= radialSegments) {
+			// 	// The indices of the vertices
+			// 	const a = (i-1) * (radialSegments + 1) + j;
+			// 	const b = a + radialSegments + 1;
+			// 	const c = a + radialSegments + 2;
+			// 	const d = a + 1;
+   //
+			// 	indices.push(a, d, b);
+			// 	indices.push(b, d, c);
+			// }
 		}
 	}
 
