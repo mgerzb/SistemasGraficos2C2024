@@ -13,7 +13,7 @@ function setupThreeJs() {
 	container.appendChild(renderer.domElement);
 
 	camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-	camera.position.set(5, 5, 0.3);
+	 camera.position.set(25, 10, 1);
 	camera.lookAt(0, 0, 0);
 
 	const controls = new OrbitControls(camera, renderer.domElement);
