@@ -2,100 +2,255 @@ import * as THREE from 'three';
 import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
 import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGeometries.js";
 
-import { RollerCoaster } from './rollerCoaster.js';
-
-let torus, cube, cone;
 const POINTS = 300;
 
-export class SceneManager {
-	
-	drawComponents(values, points, scene, color, curve, removeY = false)
+export class RollerCoaster extends THREE.Object3D {
+
+    constructor() {
+        super();
+        
+        const curve = new THREE.CurvePath();
+		
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-2, 0.3, 2),
+				new THREE.Vector3(-2, 0.3, 2.5),
+				new THREE.Vector3(-2, 0.4, 3)
+				));
+		
+		// Subida desde inicio \
+		//						\
+		//						 \
+		//						  --
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-2, 0.4, 3),
+				new THREE.Vector3(-2, 1, 5),
+				new THREE.Vector3( -2, 5, 6 )
+				));
+		// Cuspide A
+		//				_
+		//				 \
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-2, 5, 6),
+				new THREE.Vector3(-2, 6, 6.2),
+				new THREE.Vector3( -2, 6, 7 )
+				));
+		
+		// Cuspide B
+		//				 _
+		//				/
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-2, 6, 7),
+				new THREE.Vector3(-2, 6, 7.5),
+				new THREE.Vector3( -2, 5, 8 )
+				));
+		
+		// Bajada
+		//			/
+		//		   /
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-2, 5, 8),
+				new THREE.Vector3(-2, 3.75, 8.625),
+				new THREE.Vector3(-2, 2.5, 9.25)
+				));
+		
+		// Fin Bajada
+		//				/
+		//			  ──
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-2, 2.5, 9.25),
+				new THREE.Vector3(-2, 2.1, 9.5),
+				new THREE.Vector3(-2, 2.1, 9.8 )
+				));
+		
+		// Caida en curva
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-2, 2.1, 9.8 ),
+				new THREE.Vector3(-2.1, 2.1, 10.3),
+				new THREE.Vector3(-1.7, 2.08, 10.5 )
+				));
+		
+		//Caida en curva
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-1.7, 2.08, 10.5 ),
+				new THREE.Vector3(-0.6, 2.05, 11.2),
+				new THREE.Vector3(-0.4, 2, 9.8 )
+				));
+		
+		//Caida en curva
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-0.4, 2, 9.8 ),
+				new THREE.Vector3(-0.3, 1.9, 8.9),
+				new THREE.Vector3(-1, 1.7, 8.7 )
+				));
+		
+		//Caida en curva
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-1, 1.7, 8.7 ),
+				new THREE.Vector3(-1.8, 1.5, 8.6),
+				new THREE.Vector3(-1.5, 1.6, 9.7)
+				));
+				
+		// Caida curva
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-1.5, 1.6, 9.7),
+				new THREE.Vector3(-0.95, 1.6, 11.4),
+				new THREE.Vector3( 0, 1.4, 9.9 )
+				));
+		
+		// Salida de caida
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3( 0, 1.4, 9.9 ),
+				new THREE.Vector3(0.5, 1.3, 9.2),
+				new THREE.Vector3( 0.3, 1.2, 8 )
+				));
+		
+		// Sig-sag bajo subida
+		curve.add(
+			new THREE.CubicBezierCurve3(
+				new THREE.Vector3( 0.3, 1.2, 8 ),
+				new THREE.Vector3(-0.2, 1.1, 6.3),
+				new THREE.Vector3( -2.3, 1.1, 8.2 ),
+				new THREE.Vector3( -4.2, 1.0, 6.5 )
+				));
+		// Bajada a loop
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-4.2, 1.0, 6.5 ),
+				new THREE.Vector3(-4.9, 0.9, 5.8),
+				new THREE.Vector3(-4.8, 0.6, 4.8 )
+				));
+		
+		// Inicio Loop
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-4.8, 0.6, 4.8 ),
+				new THREE.Vector3(-4.7, 0.25, 3.1),
+				new THREE.Vector3(-4.8, 1.8, 2.7)
+				));
+		
+		// Mitad A Loop
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-4.8, 1.8, 2.7),
+				new THREE.Vector3(-4.9, 3.2, 2.4),
+				new THREE.Vector3(-5, 3.3, 3.6 ) 
+				));
+		
+		// Mitad B Loop
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-5, 3.3, 3.6 ) ,
+				new THREE.Vector3(-5.1, 3.3, 4.3),
+				new THREE.Vector3(-5.3, 2.3, 4.75 )
+				));
+		
+		// Bajada Loop
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-5.3, 2.3, 4.75 ),
+				new THREE.Vector3(-5.5, 1.25, 5.2),
+				new THREE.Vector3(-5.3, 0.8, 4.1 )
+				));
+		
+		// Salida Loop
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-5.3, 0.8, 4.1 ),
+				new THREE.Vector3(-5.2, 0.5, 3.5),
+				new THREE.Vector3(-5.1, 0.5, 3 )
+				));
+		
+		// Recta Final
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-5.1, 0.5, 3 ),
+				new THREE.Vector3(-4.9, 0.45, 2),
+				new THREE.Vector3(-4.8, 0.4, 1 )
+				));
+		
+		// Curva Final A
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-4.8, 0.4, 1 ),
+				new THREE.Vector3(-4.3, 0.35, -2.2),
+				new THREE.Vector3(-3.3, 0.3, -2 )
+				));
+		
+		// Curva Final B
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-3.3, 0.3, -2 ),
+				new THREE.Vector3(-2, 0.27, -1.5),
+				new THREE.Vector3(-2, 0.3, 2)
+				));
+		
+		curve.closePath();
+		
+		const points = curve.getPoints( POINTS );
+		let ff = curve.computeFrenetFrames(POINTS, true);
+        
+        this.railCurve = curve;
+        this.frenetFrames = ff;
+		
+		let mesh = this.createRailsMesh(curve, ff);
+		
+		const geometry = new THREE.BufferGeometry().setFromPoints( points );
+		
+		const material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+		
+		// Create the final object to add to the scene
+		const curveObject = new THREE.Line( geometry, material );
+        
+		this.add(mesh);
+    }
+    
+    drawComponents(values, scene, color, curve, removeY = false)
 	{
 		for (let pos = 0; pos < values.length; pos++)
 		{
-			let Matrix = new THREE.Matrix3();
+            let Matrix = new THREE.Matrix3();
 			if (removeY)
 				Matrix.set(1,0,0, 0,0,0, 0,0,1);
-			
-			const normpos = new THREE.Vector3(values[pos].x, values[pos].y, values[pos].z);
+            
+            const normpos = new THREE.Vector3(values[pos].x, values[pos].y, values[pos].z);
 			normpos.applyMatrix3(Matrix);
-			normpos.add(curve.getPointAt(pos/POINTS));
-			
-			const normal = new THREE.LineCurve3(curve.getPointAt(pos/(POINTS+1)), normpos);
-			
-			const pp = normal.getPoints(2);
-			const geometry = new THREE.BufferGeometry().setFromPoints( pp );
-		
-			const material = new THREE.LineBasicMaterial( { color: color } );
-			const curveObject = new THREE.Line( geometry, material );
-			scene.add(curveObject);
-		}
-	}
-	
-	drawNormal(values, points, scene, color, curve)
-	{
-		for (let pos = 0; pos < values.length - 1; pos++)
-		{
-			
-			let normpos = new THREE.Vector3(values[pos].x, values[pos].y, values[pos].z);
-			normpos.sub(new THREE.Vector3(values[pos+1].x, values[pos+1].y, values[pos+1].z));
-			normpos.add(curve.getPointAt(pos/POINTS));
-			
-			const normal = new THREE.LineCurve3(curve.getPointAt(pos/(POINTS+1)), normpos);
-			
-			const pp = normal.getPoints(2);
-			const geometry = new THREE.BufferGeometry().setFromPoints( pp );
-		
-			const material = new THREE.LineBasicMaterial( { color: color } );
-			const curveObject = new THREE.Line( geometry, material );
-			scene.add(curveObject);
-		}
-	}
-	
-	drawTangents(curve, points, scene, color)
-	{
-		for (let pos = 0; pos < points.length-1; pos++)
-		{
- 			let tangent = curve.getTangent(pos/POINTS);
-			//let tangent = points[pos].clone();
-			//tangent.sub(points[pos+1]);
-			tangent.normalize();
-// 			tangent.add(points[pos]);
-// 			const normal = new THREE.LineCurve3(points[pos], tangent);
-// 			const pp = normal.getPoints(2);
-// 			const geometry = new THREE.BufferGeometry().setFromPoints( pp );
-// 		
-// 			const material = new THREE.LineBasicMaterial( { color: color } );
-// 			const curveObject = new THREE.Line( geometry, material );
-// 			scene.add(curveObject);
-			
-			// Añadir flechas para mostrar las normales
-			const arrowHelperLength = 1;  // Longitud de las flechas
-			const arrowHelperColor = 0x00ff00;  // Color de las flechas (normales)
+            normpos.normalize();
+            
+            // Añadir flechas para mostrar las normales
+			const arrowHelperLength = 1.0;  // Longitud de las flechas
 			// Crear la flecha de normal
-			const arrowHelper = new THREE.ArrowHelper(tangent, points[pos], arrowHelperLength, color);
+			const arrowHelper = new THREE.ArrowHelper(normpos, this.railCurve.getPointAt(pos/(POINTS+1)), arrowHelperLength, color);
 			scene.add(arrowHelper)
-
 		}
 	}
 	
-	// Genera el contorno de las vias de la montaña
+	drawNormals(scene)
+	{
+        this.drawComponents(this.frenetFrames.normals, scene, 0x00ff00, this.railCurve, true);
+		//this.drawComponents(ff.binormals, points, scene, 0x0000ff, curve, false);
+		//this.drawComponents(ff.tangents, points, scene, 0xff0000, curve);
+	}
+	
+	drawTangents(scene)
+	{
+        this.drawComponents(this.frenetFrames.tangents, scene, 0xff0000, this.railCurve);
+	}
+	
+    // Genera el contorno de las vias de la montaña
 	getTrackShape(scene)
 	{
-		const textureLoader = new THREE.TextureLoader();
-		const texture = textureLoader.load('Img/Shape.png'); // Asegúrate de que la ruta sea correcta
-
-		// Material con el contorno a dibujar (ayuda temporal)
-		const material = new THREE.MeshBasicMaterial({ map: texture });
-		
-
-		// Plano para seguimiento de contorno
-		const geometry = new THREE.PlaneGeometry(0.5, 0.5);
-		const plane = new THREE.Mesh(geometry, material);
-		
-		
-		scene.add(plane);
-		
 		// Rectangle for the Parametric geometry
 		let rectangle = new THREE.CurvePath();
 		rectangle.autoClose =false;
@@ -150,7 +305,6 @@ export class SceneManager {
 			new THREE.Vector3(- XStart + 0.028, YStart - 0.03, ZStart ),
 			new THREE.Vector3(- XStart + 0.028, YStart, ZStart ),
 			new THREE.Vector3(- XStart + 0.01, YStart, ZStart )
-			
 		));
 		
 		rectangle.add(
@@ -237,39 +391,20 @@ export class SceneManager {
 		
 		//rectangle.closePath();
 		
-		const recpoints = rectangle.getPoints( 50 );
-		const recgeometry = new THREE.BufferGeometry().setFromPoints( recpoints );
-		const recmaterial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-		const rec = new THREE.Line( recgeometry, recmaterial );
-		
-		scene.add( rec );
-		
+// 		const recpoints = rectangle.getPoints( 50 );
+// 		const recgeometry = new THREE.BufferGeometry().setFromPoints( recpoints );
+// 		const recmaterial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
+// 		const rec = new THREE.Line( recgeometry, recmaterial );
+// 		
+// 		scene.add( rec );
+// 		
 		return rectangle;
 	}
 	
-	drawRails(curve, frames, scene)
+    createRailsMesh(curve, frames)
 	{		
-		// Rectangle for the Parametric geometry
-		let rectangle = new THREE.CurvePath();
-		const reclen = 0.2;
-		rectangle.add(new THREE.LineCurve3(new THREE.Vector3( -reclen, -reclen, 0 ), new THREE.Vector3( -reclen, -reclen/2, 0 ))); //ˉ
-		rectangle.add(new THREE.LineCurve3(new THREE.Vector3( -reclen, -reclen/2, 0 ), new THREE.Vector3( -reclen/2, -reclen/2, 0 ))); //ˉ|
-		rectangle.add(new THREE.LineCurve3(new THREE.Vector3( -reclen/2, -reclen/2, 0 ), new THREE.Vector3( -reclen/2, reclen/2, 0 ))); //ˉ|_
-		rectangle.add(new THREE.LineCurve3(new THREE.Vector3( -reclen/2, reclen/2, 0 ), new THREE.Vector3( -reclen, reclen/2, 0 ))); //ˉ|_|
-		rectangle.add(new THREE.LineCurve3(new THREE.Vector3( -reclen, reclen/2, 0 ), new THREE.Vector3( -reclen, reclen, 0 ))); //ˉ|_|ˉ
-		rectangle.add(new THREE.LineCurve3(new THREE.Vector3( -reclen, reclen, 0 ), new THREE.Vector3( reclen/2, reclen, 0  )));
-		rectangle.add(new THREE.LineCurve3(new THREE.Vector3( reclen/2, reclen, 0 ), new THREE.Vector3( reclen/2, -reclen, 0 )));
-		
-		rectangle.closePath();
-		
-		rectangle = this.getTrackShape(scene);
-		
-		const recpoints = rectangle.getPoints(POINTS);
-		const recgeometry = new THREE.BufferGeometry().setFromPoints( recpoints );
-		const recmaterial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-		const rec = new THREE.Line( recgeometry, recmaterial );
-		scene.add( rec );
-
+		// Track shape for the Parametric geometry
+		let rectangle = this.getTrackShape();
 		
 		let ParamFunc = function (u, v, target) {
 			let Matrix = new THREE.Matrix3();
@@ -315,64 +450,7 @@ export class SceneManager {
 		const geometry = new ParametricGeometry( ParamFunc, 20, POINTS -1);
 		const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: false, wireframe: false});
 		const mesh = new THREE.Mesh( geometry, material );
-		scene.add( mesh );
 		
-	}
-	
-	constructor(scene) {
-		const light = new THREE.DirectionalLight(0xffffff, 1);
-
-		light.position.set(0, 5, 0);
-		scene.add(light);
-
-		const ambientLight = new THREE.AmbientLight(0x666666);
-		scene.add(ambientLight);
-
-		const grid = new THREE.GridHelper(10, 10);
-		scene.add(grid);
-
-		const axes = new THREE.AxesHelper(3);
-		scene.add(axes);
-
-		
-		//this.drawComponents(ff.normals, points, scene, 0x00ff00, curve, true);
-		//this.drawComponents(ff.binormals, points, scene, 0x0000ff, curve, false);
-		//this.drawComponents(ff.tangents, points, scene, 0xff0000, curve);
-		
-		//this.drawNormal(ff.tangents, points, scene, 0x00ff00, curve);
-		//this.drawTangents(curve, points, scene, 0x00ffff);
-		
-		let rollerCoaster = new RollerCoaster();
-		//this.drawRails(curve, ff, scene);
-		scene.add(rollerCoaster);
-		rollerCoaster.drawNormals(scene);
-		rollerCoaster.drawTangents(scene);
-		
-		//this.getTrackShape(scene);
-		
-// 		for (let pos = 0; pos < ff.normals.length; pos++)
-// 		{
-// 			const normpos = new THREE.Vector3(ff.normals[pos].x, ff.normals[pos].y, ff.normals[pos].z);
-// 			normpos.add(points[pos]);
-// 			const normal = new THREE.LineCurve3(points[pos], normpos);
-// 			const pp = normal.getPoints(2);
-// 			const geometry = new THREE.BufferGeometry().setFromPoints( pp );
-// 		
-// 			const material = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
-// 			const curveObject = new THREE.Line( geometry, material );
-// 			scene.add(curveObject);
-// 		}
-		
-		
-// 		const geometry = new THREE.BufferGeometry().setFromPoints( points );
-// 		
-// 		const material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-// 		
-// 		// Create the final object to add to the scene
-// 		const curveObject = new THREE.Line( geometry, material );
-// 		scene.add(curveObject);
-	}
-
-	animate() {
+        return mesh;
 	}
 }
