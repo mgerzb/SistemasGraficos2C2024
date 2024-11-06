@@ -152,14 +152,14 @@ export class RollerCoaster extends THREE.Object3D {
 		curve.add(
 			new THREE.QuadraticBezierCurve3(
 				new THREE.Vector3(-5, 3.3, 3.6 ) ,
-				new THREE.Vector3(-5.1, 3.3, 4.3),
-				new THREE.Vector3(-5.3, 2.3, 4.75 )
+				new THREE.Vector3(-5.1, 3.35, 4.6),
+				new THREE.Vector3(-5.3, 2.3, 4.9 )
 				));
 		
 		// Bajada Loop
 		curve.add(
 			new THREE.QuadraticBezierCurve3(
-				new THREE.Vector3(-5.3, 2.3, 4.75 ),
+				new THREE.Vector3(-5.3, 2.3, 4.9 ),
 				new THREE.Vector3(-5.5, 1.25, 5.2),
 				new THREE.Vector3(-5.3, 0.8, 4.1 )
 				));
@@ -214,9 +214,15 @@ export class RollerCoaster extends THREE.Object3D {
 		const curveObject = new THREE.Line( geometry, material );
         
 		this.add(mesh);
+        
+        this.helpers = {
+            normals: [],
+            tangents: [],
+            binormals: []
+        };
     }
     
-    drawComponents(values, scene, color, curve, removeY = false)
+    drawComponents(values, scene, color, curve, storage, removeY = false)
 	{
 		for (let pos = 0; pos < values.length; pos++)
 		{
@@ -232,21 +238,54 @@ export class RollerCoaster extends THREE.Object3D {
 			const arrowHelperLength = 1.0;  // Longitud de las flechas
 			// Crear la flecha de normal
 			const arrowHelper = new THREE.ArrowHelper(normpos, this.railCurve.getPointAt(pos/(POINTS+1)), arrowHelperLength, color);
-			scene.add(arrowHelper)
+            storage.push(arrowHelper);
+			scene.add(arrowHelper);
 		}
+	}
+	
+		
+	hideComponents(storage, scene)
+	{
+        for (let pos = 0; pos < storage.length; pos++)
+		{
+			scene.remove(storage[pos]);
+		}
+		
+		storage.length = 0;
 	}
 	
 	drawNormals(scene)
 	{
-        this.drawComponents(this.frenetFrames.normals, scene, 0x00ff00, this.railCurve, true);
-		//this.drawComponents(ff.binormals, points, scene, 0x0000ff, curve, false);
-		//this.drawComponents(ff.tangents, points, scene, 0xff0000, curve);
+        if (this.helpers.normals.length == 0)
+            this.drawComponents(this.frenetFrames.normals, scene, 0x00ff00, this.railCurve, this.helpers.normals, true);
 	}
+	
+	hideNormals(scene)
+    {
+        this.hideComponents(this.helpers.normals, scene);
+    }
 	
 	drawTangents(scene)
 	{
-        this.drawComponents(this.frenetFrames.tangents, scene, 0xff0000, this.railCurve);
+        if (this.helpers.tangents.length == 0)
+            this.drawComponents(this.frenetFrames.tangents, scene, 0xff0000, this.railCurve, this.helpers.tangents);
 	}
+	
+    hideTangents(scene)
+    {
+        this.hideComponents(this.helpers.tangents, scene);
+    }
+	
+	drawBinormals(scene)
+    {
+        if (this.helpers.binormals.length == 0)
+            this.drawComponents(this.frenetFrames.binormals, scene, 0x0000ff, this.railCurve, this.helpers.binormals);
+    }
+    
+    hideBinormals(scene)
+    {
+        this.hideComponents(this.helpers.binormals, scene);
+    }
 	
     // Genera el contorno de las vias de la montaña
 	getTrackShape(scene)

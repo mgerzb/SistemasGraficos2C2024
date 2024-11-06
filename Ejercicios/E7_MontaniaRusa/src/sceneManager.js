@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
 import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGeometries.js";
 
+import * as dat from 'dat.gui';
+
 import { RollerCoaster } from './rollerCoaster.js';
 
 let torus, cube, cone;
@@ -342,11 +344,13 @@ export class SceneManager {
 		//this.drawNormal(ff.tangents, points, scene, 0x00ff00, curve);
 		//this.drawTangents(curve, points, scene, 0x00ffff);
 		
-		let rollerCoaster = new RollerCoaster();
+		this.rollerCoaster = new RollerCoaster();
 		//this.drawRails(curve, ff, scene);
-		scene.add(rollerCoaster);
-		rollerCoaster.drawNormals(scene);
-		rollerCoaster.drawTangents(scene);
+		scene.add(this.rollerCoaster);
+		
+		//this.rollerCoaster.drawNormals(scene);
+		//this.rollerCoaster.drawTangents(scene);
+		//this.rollerCoaster.drawBinormals(scene);
 		
 		//this.getTrackShape(scene);
 		
@@ -371,6 +375,61 @@ export class SceneManager {
 // 		// Create the final object to add to the scene
 // 		const curveObject = new THREE.Line( geometry, material );
 // 		scene.add(curveObject);
+		
+		this.properties =
+		{
+			showRLNormals: false,
+			showRLTangents: false,
+			showRLBinormals: false
+		}
+		
+		this.setupUI(this);
+		
+		this.scene = scene;
+	}
+	
+	RLHelpers()
+	{
+		if (this.properties.showRLNormals)
+		{
+			this.rollerCoaster.drawNormals(this.scene);
+		} else
+		{
+			this.rollerCoaster.hideNormals(this.scene);
+		}
+		
+		if (this.properties.showRLTangents)
+		{
+			this.rollerCoaster.drawTangents(this.scene);
+		} else
+		{
+			this.rollerCoaster.hideTangents(this.scene);
+		}
+		
+		if (this.properties.showRLBinormals)
+		{
+			this.rollerCoaster.drawBinormals(this.scene);
+		} else
+		{
+			this.rollerCoaster.hideBinormals(this.scene);
+		}
+	}
+	
+	setupUI(Manager)
+	{
+		let gui = new dat.GUI();
+		let f1 = gui.addFolder('Helpers');
+		let f2 = f1.addFolder('RLC');
+	
+		f2.add(this.properties, 'showRLNormals')
+			.name('Normals')
+			.onChange((value) => {this.RLHelpers()});
+		f2.add(this.properties, 'showRLTangents')
+			.name('Tangents')
+			.onChange((value) => {this.RLHelpers()});
+		f2.add(this.properties, 'showRLBinormals')
+			.name('Binormals')
+			.onChange((value) => {this.RLHelpers()});
 	}
 
 	animate() {
