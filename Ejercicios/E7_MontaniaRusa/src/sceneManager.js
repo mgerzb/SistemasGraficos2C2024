@@ -3,7 +3,7 @@ import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.j
 import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGeometries.js";
 
 let torus, cube, cone;
-const POINTS = 150;
+const POINTS = 300;
 
 export class SceneManager {
 	
@@ -13,7 +13,7 @@ export class SceneManager {
 		{
 			let Matrix = new THREE.Matrix3();
 			if (removeY)
-				Matrix.set(0,0,0, 0,1,0, 0,0,1);
+				Matrix.set(1,0,0, 0,0,0, 0,0,1);
 			
 			const normpos = new THREE.Vector3(values[pos].x, values[pos].y, values[pos].z);
 			normpos.applyMatrix3(Matrix);
@@ -262,7 +262,7 @@ export class SceneManager {
 		
 		rectangle = this.getTrackShape(scene);
 		
-		const recpoints = rectangle.getPoints( 100);
+		const recpoints = rectangle.getPoints(POINTS);
 		const recgeometry = new THREE.BufferGeometry().setFromPoints( recpoints );
 		const recmaterial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
 		const rec = new THREE.Line( recgeometry, recmaterial );
@@ -279,22 +279,27 @@ export class SceneManager {
 			const scale = new THREE.Matrix4();
 			const rotation = new THREE.Matrix4();
 			
-			scale.makeScale(0.5,0.5,0.5);
+			scale.makeScale(0.5,0.75,0.75);
 			rotation.makeRotationZ(Math.PI);
-			
-			
 			target.copy(rectangle.getPointAt(u));
-			let position = curve.getPointAt(v);
-			let tangent = curve.getTangentAt(v);
 			
-			const frpos = Math.floor(POINTS * v);
+			let position = curve.getPointAt(v);
+			//let tangent = curve.getTangentAt(v);
+			
+			let frpos = Math.floor((POINTS) * v);
+			
+			// Cuando estamos en el último punto de la curva forzamos
+			// que el valor de la tangente y normal sean los que se usaron al inicio de la curva
+			if (v == POINTS)
+				frpos = 0;
 			
 			target.applyMatrix4(scale);
 			target.applyMatrix4(rotation);
 		
-			//frames.normals[frpos].applyMatrix3(Matrix);
-			
-			//frames.binormals[frpos].crossVectors(frames.tangents[frpos], frames.normals[frpos]);
+			frames.normals[frpos].applyMatrix3(Matrix);
+			frames.normals[frpos].normalize();
+			frames.binormals[frpos].crossVectors(frames.tangents[frpos], frames.normals[frpos]);
+			frames.binormals[frpos].normalize();
 			
 			m.set(  frames.normals[frpos].x,frames.binormals[frpos].x, frames.tangents[frpos].x, position.x, 
 				    frames.normals[frpos].y,frames.binormals[frpos].y, frames.tangents[frpos].y, position.y,
@@ -305,8 +310,8 @@ export class SceneManager {
 			//target.applyMatrix4(scale);
 		}
 		
-		const geometry = new ParametricGeometry( ParamFunc, 50, 500 );
-		const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: true, wireframe: false});
+		const geometry = new ParametricGeometry( ParamFunc, 20, POINTS -1);
+		const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: false, wireframe: false});
 		const mesh = new THREE.Mesh( geometry, material );
 		scene.add( mesh );
 		
@@ -336,13 +341,21 @@ export class SceneManager {
 		
 		const curve = new THREE.CurvePath();
 		
+		
+		curve.add(
+			new THREE.QuadraticBezierCurve3(
+				new THREE.Vector3(-2, 0.3, 2),
+				new THREE.Vector3(-2, 0.3, 2.5),
+				new THREE.Vector3(-2, 0.4, 3)
+				));
+		
 		// Subida desde inicio \
 		//						\
 		//						 \
 		//						  --
 		curve.add(
 			new THREE.QuadraticBezierCurve3(
-				new THREE.Vector3(-2, 0.3, 2),
+				new THREE.Vector3(-2, 0.4, 3),
 				new THREE.Vector3(-2, 1, 5),
 				new THREE.Vector3( -2, 5, 6 )
 				));
@@ -454,38 +467,38 @@ export class SceneManager {
 		curve.add(
 			new THREE.QuadraticBezierCurve3(
 				new THREE.Vector3(-4.8, 0.6, 4.8 ),
-				new THREE.Vector3(-4.7, 0.25, 3.7),
-				new THREE.Vector3(-4.8, 1.2, 3.3 )
+				new THREE.Vector3(-4.7, 0.25, 3.1),
+				new THREE.Vector3(-4.8, 1.8, 2.7)
 				));
 		
 		// Mitad A Loop
 		curve.add(
 			new THREE.QuadraticBezierCurve3(
-				new THREE.Vector3(-4.8, 1.2, 3.3 ),
-				new THREE.Vector3(-4.9, 2.3, 2.8),
-				new THREE.Vector3(-5, 2.7, 3.6 )
+				new THREE.Vector3(-4.8, 1.8, 2.7),
+				new THREE.Vector3(-4.9, 3.2, 2.4),
+				new THREE.Vector3(-5, 3.3, 3.6 ) 
 				));
 		
 		// Mitad B Loop
 		curve.add(
 			new THREE.QuadraticBezierCurve3(
-				new THREE.Vector3(-5, 2.7, 3.6 ),
-				new THREE.Vector3(-5.05, 2.8, 3.95),
-				new THREE.Vector3(-5.2, 2.3, 4.3 )
+				new THREE.Vector3(-5, 3.3, 3.6 ) ,
+				new THREE.Vector3(-5.1, 3.3, 4.3),
+				new THREE.Vector3(-5.3, 2.3, 4.75 )
 				));
 		
 		// Bajada Loop
 		curve.add(
 			new THREE.QuadraticBezierCurve3(
-				new THREE.Vector3(-5.2, 2.3, 4.3 ),
-				new THREE.Vector3(-5.4, 1.5, 4.9),
-				new THREE.Vector3(-5.3, 0.9, 4.1 )
+				new THREE.Vector3(-5.3, 2.3, 4.75 ),
+				new THREE.Vector3(-5.5, 1.25, 5.2),
+				new THREE.Vector3(-5.3, 0.8, 4.1 )
 				));
 		
 		// Salida Loop
 		curve.add(
 			new THREE.QuadraticBezierCurve3(
-				new THREE.Vector3(-5.3, 0.9, 4.1 ),
+				new THREE.Vector3(-5.3, 0.8, 4.1 ),
 				new THREE.Vector3(-5.2, 0.5, 3.5),
 				new THREE.Vector3(-5.1, 0.5, 3 )
 				));
@@ -513,6 +526,8 @@ export class SceneManager {
 				new THREE.Vector3(-2, 0.27, -1.5),
 				new THREE.Vector3(-2, 0.3, 2)
 				));
+		
+		curve.closePath();
 		
 		
 // 		rectangle.add(
@@ -574,8 +589,8 @@ export class SceneManager {
 		const points = curve.getPoints( POINTS );
 		let ff = curve.computeFrenetFrames(POINTS, true);
 		
-		//this.drawComponents(ff.normals, points, scene, 0x00ff00, curve, false);
-		//this.drawComponents(ff.binormals, points, scene, 0x0000ff, curve, true);
+		//this.drawComponents(ff.normals, points, scene, 0x00ff00, curve, true);
+		//this.drawComponents(ff.binormals, points, scene, 0x0000ff, curve, false);
 		//this.drawComponents(ff.tangents, points, scene, 0xff0000, curve);
 		
 		//this.drawNormal(ff.tangents, points, scene, 0x00ff00, curve);
@@ -583,7 +598,7 @@ export class SceneManager {
 		
 		this.drawRails(curve, ff, scene);
 		
-		this.getTrackShape(scene);
+		//this.getTrackShape(scene);
 		
 // 		for (let pos = 0; pos < ff.normals.length; pos++)
 // 		{
