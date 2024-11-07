@@ -204,7 +204,7 @@ export class RollerCoaster extends THREE.Object3D {
         this.railCurve = curve;
         this.frenetFrames = ff;
 		
-		let mesh = this.createRailsMesh(curve, ff);
+		this.rcMesh = this.createRailsMesh(curve, ff);
 		
 		const geometry = new THREE.BufferGeometry().setFromPoints( points );
 		
@@ -213,7 +213,7 @@ export class RollerCoaster extends THREE.Object3D {
 		// Create the final object to add to the scene
 		const curveObject = new THREE.Line( geometry, material );
         
-		this.add(mesh);
+		this.add(this.rcMesh);
         
         this.helpers = {
             normals: [],
@@ -222,6 +222,19 @@ export class RollerCoaster extends THREE.Object3D {
         };
     }
     
+    wireframe(enable)
+    {
+        this.rcMesh.material.wireframe = enable;
+        this.rcMesh.material.needsUpdate = true;
+    }
+    
+    flatShading(enable)
+    {
+        this.rcMesh.material.flatShading = enable;
+        this.rcMesh.material.needsUpdate = true;
+    }
+    
+    // Dibuja los helpers para la curva
     drawComponents(values, scene, color, curve, storage, removeY = false)
 	{
 		for (let pos = 0; pos < values.length; pos++)
@@ -243,7 +256,7 @@ export class RollerCoaster extends THREE.Object3D {
 		}
 	}
 	
-		
+    // Oculta los helpers de la curva (si estuvieran agregados)
 	hideComponents(storage, scene)
 	{
         for (let pos = 0; pos < storage.length; pos++)
