@@ -31,9 +31,8 @@ export class SceneManager {
 		
 		this.properties =
 		{
-			showGrid: false,
-			showAxes: false,
-			
+			showGrid: true,
+			showAxes: true,
 			showRLNormals: false,
 			showRLTangents: false,
 			showRLBinormals: false,
@@ -41,12 +40,15 @@ export class SceneManager {
 			showRLFlatShading: false
 		}
 		
-		this.setupUI(this);
-		
 		this.scene = scene;
+		
+		this.setupUI(this);
+		this.rLHelpersUpdate();
+		this.worldHelpersUpdate();
+		
 	}
 	
-	RLHelpers()
+	rLHelpersUpdate()
 	{
 		if (this.properties.showRLNormals)
 		{
@@ -71,6 +73,14 @@ export class SceneManager {
 		{
 			this.rollerCoaster.hideBinormals(this.scene);
 		}
+		
+	}
+	
+	worldHelpersUpdate()
+	{
+		this.properties.showGrid ? this.scene.add(this.grid):this.scene.remove(this.grid);
+		
+		this.properties.showAxes ? this.scene.add(this.axes):this.scene.remove(this.axes);
 	}
 	
 	setupUI(Manager)
@@ -89,11 +99,11 @@ export class SceneManager {
 		
 		f2.add(this.properties, 'showGrid')
 			.name('Grid')
-			.onChange((value) => {value ? this.scene.add(this.grid):this.scene.remove(this.grid);});
+			.onChange((value) => {this.properties.showGrid = value; this.worldHelpersUpdate();});
 		
 		f2.add(this.properties, 'showAxes')
 			.name('Axes')
-			.onChange((value) => {value ? this.scene.add(this.axes):this.scene.remove(this.axes);});
+			.onChange((value) => {this.properties.showAxes = value; this.worldHelpersUpdate();});
 	}
 	
 	setupRLHelpers(f1)
