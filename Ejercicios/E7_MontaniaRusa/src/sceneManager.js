@@ -20,11 +20,10 @@ export class SceneManager {
 		const ambientLight = new THREE.AmbientLight(0x666666);
 		scene.add(ambientLight);
 
-		const grid = new THREE.GridHelper(10, 10);
-		scene.add(grid);
+		this.grid = new THREE.GridHelper(10, 10);
 
-		const axes = new THREE.AxesHelper(3);
-		scene.add(axes);
+		this.axes = new THREE.AxesHelper(3);
+		//scene.add(axes);
 		
 		this.rollerCoaster = new RollerCoaster();
 		scene.add(this.rollerCoaster);
@@ -32,6 +31,9 @@ export class SceneManager {
 		
 		this.properties =
 		{
+			showGrid: false,
+			showAxes: false,
+			
 			showRLNormals: false,
 			showRLTangents: false,
 			showRLBinormals: false,
@@ -75,6 +77,27 @@ export class SceneManager {
 	{
 		let gui = new dat.GUI();
 		let f1 = gui.addFolder('Helpers');
+		
+		this.setupWorldHelpers(f1);
+		this.setupRLHelpers(f1);
+		
+	}
+	
+	setupWorldHelpers(f1)
+	{
+		let f2 = f1.addFolder('General');
+		
+		f2.add(this.properties, 'showGrid')
+			.name('Grid')
+			.onChange((value) => {value ? this.scene.add(this.grid):this.scene.remove(this.grid);});
+		
+		f2.add(this.properties, 'showAxes')
+			.name('Axes')
+			.onChange((value) => {value ? this.scene.add(this.axes):this.scene.remove(this.axes);});
+	}
+	
+	setupRLHelpers(f1)
+	{
 		let f2 = f1.addFolder('RLC');
 	
 		f2.add(this.properties, 'showRLNormals')
