@@ -28,7 +28,6 @@ export class SceneManager {
 		this.rollerCoaster = new RollerCoaster();
 		scene.add(this.rollerCoaster);
 		
-		
 		this.properties =
 		{
 			showGrid: true,
@@ -112,13 +111,13 @@ export class SceneManager {
 	
 		f2.add(this.properties, 'showRLNormals')
 			.name('Normals')
-			.onChange((value) => {this.RLHelpers()});
+			.onChange((value) => {this.rLHelpersUpdate()});
 		f2.add(this.properties, 'showRLTangents')
 			.name('Tangents')
-			.onChange((value) => {this.RLHelpers()});
+			.onChange((value) => {this.rLHelpersUpdate()});
 		f2.add(this.properties, 'showRLBinormals')
 			.name('Binormals')
-			.onChange((value) => {this.RLHelpers()});
+			.onChange((value) => {this.rLHelpersUpdate()});
 			
 		f2.add(this.properties, 'showRLWireframe')
 			.name('Wireframe')
