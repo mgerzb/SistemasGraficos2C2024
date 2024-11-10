@@ -198,8 +198,6 @@ export class RollerCoaster extends THREE.Object3D {
         
         curve.closePath();
         
-        const points = curve.getPoints( 5 );
-        
         let ff = curve.computeFrenetFrames(POINTS, true);
         
         this.railCurve = curve;
@@ -207,18 +205,10 @@ export class RollerCoaster extends THREE.Object3D {
         
         this.rcMesh = this.createRailsMesh(curve, ff);
         
-        const trackGeometry = new THREE.BufferGeometry().setFromPoints( points );
-        const trackMaterial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-        
         // Dibuja las columnas y crea una nueva cada X distancia (de ser posible)
         this.createColumns(this.railCurve, 1, ff);
         
-        // Create the final object to add to the scene
-        const curveObject = new THREE.Line( trackGeometry, trackMaterial );
-        
         this.add(this.rcMesh);
-        this.add(curveObject);
-
         
         this.helpers = {
             normals: [],
@@ -522,30 +512,6 @@ export class RollerCoaster extends THREE.Object3D {
         const columnRadius = 0.05;
         const columnForm = new THREE.EllipseCurve(0, 0, columnRadius, columnRadius, 0, 2* Math.PI, false);
         
-        
-        /// TODO ELIMINAR ESTO, SOLO PARA PRUEBAAAAA
-        let rotationPlane = new THREE.Vector3(0, 0, 1);
-        
-        const recpoints = columnForm.getPoints( 50 );
-        const quaternion = new THREE.Quaternion();
-        quaternion.setFromAxisAngle(rotationPlane, Math.PI/4);
-        
-        const circlePoints = recpoints.map(function(point)
-        {
-            let result = new THREE.Vector3(point.x, 0, point.y);
-            result.applyQuaternion(quaternion);
-            
-            return result;
-        });
-        
-        const recgeometry = new THREE.BufferGeometry().setFromPoints( circlePoints );
-        const recmaterial = new THREE.LineBasicMaterial( { color: 0x00ff00 } );
-        const rec = new THREE.Line( recgeometry, recmaterial );
-        
-        this.add(rec);
-        
-        /// TODO FIN DE LA PRUEBAAAAAAAA
-        
         // Primero obtenemos un proyeccion de la curva en el plano xz
         // (nos va a permitir calcular correctamente una equidistancia entre columnas)
         const points = curve.getSpacedPoints( POINTS );
@@ -654,12 +620,6 @@ export class RollerCoaster extends THREE.Object3D {
                 arclenCurve = 0;
             }
         }
-        
-        const proyectedGeometry = new THREE.BufferGeometry().setFromPoints( proyectedPoints );
-        const proyectedMaterial = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-        
-        const proyObject = new THREE.Line( proyectedGeometry, proyectedMaterial );
-        this.add(proyObject);
         
     }
 }
