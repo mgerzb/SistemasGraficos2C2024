@@ -16,12 +16,33 @@
 
 			#container3D {
 				width: 100%;
+				height: 60%;
+			}
+			#cameras {
+				width: 100%;
+				height: 40%;
+			}
+			#container3DC1 {
+				float: left;
+				display: inline-block;
+				width: 50%;
+				height: 100%;
+			}
+			#container3DC2 {
+				float: left;
+				display: inline-block;
+				vertical-align:top;
+				width: 50%;
 				height: 100%;
 			}
 		</style>
 	</head>
 	<body>
 		<div id="container3D"></div>
+		<div id="cameras">
+			<div id="container3DC1"></div>
+			<div id="container3DC2"></div>
+		</div>
 		<script type="module" src="/src/main.js"></script>
 	</body>
 </html>

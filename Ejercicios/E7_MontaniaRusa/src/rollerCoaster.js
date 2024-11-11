@@ -242,9 +242,13 @@ export class RollerCoaster extends THREE.Object3D {
         const position = this.railCurve.getPointAt(frpos/(this.frenetFrames.normals.length - 1));
         
                 // Promedio de la normal
-        let frameNormals = frames.normals[Math.floor(this.trainPosition)].lerp(frames.normals[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
-        let frameBinormals = frames.binormals[Math.floor(this.trainPosition)].lerp(frames.binormals[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
-        let frameTangents = frames.tangents[Math.floor(this.trainPosition)].lerp(frames.tangents[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
+        let frameNormals = frames.normals[Math.floor(this.trainPosition)].clone();
+        let frameBinormals = frames.binormals[Math.floor(this.trainPosition)].clone();
+        let frameTangents = frames.tangents[Math.floor(this.trainPosition)].clone();
+        
+        frameNormals.lerp(frames.normals[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
+        frameBinormals.lerp(frames.binormals[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
+        frameTangents.lerp(frames.tangents[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
         
         let rotation = new THREE.Matrix4();
         rotation.makeRotationX(Math.PI);
