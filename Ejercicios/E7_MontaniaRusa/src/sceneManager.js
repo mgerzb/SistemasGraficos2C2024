@@ -5,8 +5,8 @@ import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGe
 import * as dat from 'dat.gui';
 
 import { RollerCoaster } from './rollerCoaster.js';
+import { Train } from './train.js';
 
-let torus, cube, cone;
 const POINTS = 300;
 
 export class SceneManager {
@@ -27,6 +27,13 @@ export class SceneManager {
 		
 		this.rollerCoaster = new RollerCoaster();
 		scene.add(this.rollerCoaster);
+		
+		this.train = new Train();
+		this.train.scale.x = 0.125;
+		this.train.scale.y = 0.125;
+		this.train.scale.z = 0.125;
+		
+		this.rollerCoaster.addTrain(this.train);
 		
 		this.properties =
 		{
@@ -127,7 +134,17 @@ export class SceneManager {
 			.name('FlatShading')
 			.onChange((value) => {this.rollerCoaster.flatShading(value)});
 	}
+	
+	addTrainCameras(c1, c2)
+	{
+		this.train.add(c1);
+		this.train.add(c2);
+		
+		const helper = new THREE.CameraHelper( c2 );
+		this.scene.add(helper);
+	}
 
 	animate() {
+		this.rollerCoaster.animate();
 	}
 }

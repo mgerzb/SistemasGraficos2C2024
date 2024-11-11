@@ -217,6 +217,50 @@ export class RollerCoaster extends THREE.Object3D {
         };
     }
     
+    addTrain(train)
+    {
+        this.train = train;
+        this.train.matrixAutoUpdate = false;
+        this.trainPosition = 0;
+        this.add(train);
+        
+        train.rotation.x = Math.PI;
+        train.position.y += -0.09;
+        
+        this.animate();
+    }
+    
+    animate()
+    {
+        this.trainPosition+= 0.25;
+        
+        if (this.trainPosition > this.frenetFrames.normals.length - 1)
+            this.trainPosition = 0;
+        
+        const frpos = this.trainPosition;
+        const frames = this.frenetFrames;
+        const position = this.railCurve.getPointAt(frpos/(this.frenetFrames.normals.length - 1));
+        
+                // Promedio de la normal
+        let frameNormals = frames.normals[Math.floor(this.trainPosition)].lerp(frames.normals[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
+        let frameBinormals = frames.binormals[Math.floor(this.trainPosition)].lerp(frames.binormals[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
+        let frameTangents = frames.tangents[Math.floor(this.trainPosition)].lerp(frames.tangents[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
+        
+        let rotation = new THREE.Matrix4();
+        rotation.makeRotationX(Math.PI);
+        let scale = new THREE.Matrix4();
+        scale.makeScale(0.1, 0.1, 0.1);
+        let m = new THREE.Matrix4();
+        m.set(  frameNormals.x,frameBinormals.x, frameTangents.x, position.x + 0.1 * -frameBinormals.x,
+                frameNormals.y,frameBinormals.y, frameTangents.y, position.y + 0.1 * -frameBinormals.y,
+                frameNormals.z,frameBinormals.z, frameTangents.z, position.z + 0.1 * -frameBinormals.z,
+                0, 0, 0, 1);
+        rotation.multiply(scale);
+        m.multiply(rotation);
+        
+        this.train.matrix = m;
+    }
+    
     wireframe(enable)
     {
         this.rcMesh.material.wireframe = enable;

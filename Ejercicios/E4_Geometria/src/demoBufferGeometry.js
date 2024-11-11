@@ -76,7 +76,7 @@ function buildScene() {
 	let normalMeshHelper = new VertexNormalsHelper(cylinder, 0.2, 0x00ff00, 1);
 	//scene.add(normalMeshHelper);
 
-	//scene.add(cylinder);
+	scene.add(cylinder);
 	
 	let geoplane = createPlane(1, 1, 20, 40);
 	
