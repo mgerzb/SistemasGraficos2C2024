@@ -1,10 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { Sky } from 'three/addons/objects/Sky.js';
 
 import { SceneManager } from './sceneManager.js';
 let scene, camera, renderer, c1renderer, c2renderer, c1container, c2container, container, sceneManager;
 
 let trainCamera1, trainCamera2;
+
+let sun, sky;
 
 function setupThreeJs() {
 	container = document.getElementById('container3D');
@@ -38,6 +41,52 @@ function setupThreeJs() {
 
 	window.addEventListener('resize', onResize);
 	onResize();
+	
+	initSky();
+
+	scene.fog = new THREE.Fog( 0xcccccc, 35, 95);
+}
+
+const effectController = {
+	turbidity: 10,
+	rayleigh: 3,
+	mieCoefficient: 0.005,
+	mieDirectionalG: 0.7,
+	elevation: 2,
+	azimuth: 120,
+	exposure: 0.09
+};
+
+function initSky() {
+	
+	// Add Sky
+	sky = new Sky();
+	sky.scale.setScalar( 450000 );
+	scene.add( sky );
+	
+	sun = new THREE.Vector3();
+	
+	guiChanged();
+}
+
+function guiChanged() {
+	
+	const uniforms = sky.material.uniforms;
+	uniforms[ 'turbidity' ].value = effectController.turbidity;
+	uniforms[ 'rayleigh' ].value = effectController.rayleigh;
+	uniforms[ 'mieCoefficient' ].value = effectController.mieCoefficient;
+	uniforms[ 'mieDirectionalG' ].value = effectController.mieDirectionalG;
+	
+	const phi = THREE.MathUtils.degToRad( 90 - effectController.elevation );
+	const theta = THREE.MathUtils.degToRad( effectController.azimuth );
+	
+	sun.setFromSphericalCoords( 1, phi, theta );
+	
+	uniforms[ 'sunPosition' ].value.copy( sun );
+	
+	renderer.toneMappingExposure = effectController.exposure;
+	renderer.render( scene, camera );
+	
 }
 
 function onResize() {

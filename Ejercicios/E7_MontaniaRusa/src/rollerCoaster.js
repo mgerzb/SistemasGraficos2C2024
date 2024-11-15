@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
 import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGeometries.js";
+import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
 
 const POINTS = 400;
 
@@ -197,6 +198,8 @@ export class RollerCoaster extends THREE.Object3D {
                 ));
         
         curve.closePath();
+        curve.arcLengthDivisions = 800;
+        curve.updateArcLengths();
         
         let ff = curve.computeFrenetFrames(POINTS, true);
         
@@ -220,35 +223,45 @@ export class RollerCoaster extends THREE.Object3D {
     addTrain(train)
     {
         this.train = train;
+        let otherTrain = train.clone();
         this.train.matrixAutoUpdate = false;
         this.trainPosition = 0;
         this.add(train);
         
-        train.rotation.x = Math.PI;
+        train.rotation.x = Math.PI;  
         train.position.y += -0.09;
+        
+        this.trainSpeed = 1;
+        
+        otherTrain.position.z += 1.8;
+        train.add(otherTrain);
         
         this.animate();
     }
     
     animate()
     {
-        this.trainPosition+= 0.25;
+        this.trainPosition += this.trainSpeed;
         
-        if (this.trainPosition > this.frenetFrames.normals.length - 1)
+        let curvePoints = this.railCurve.getSpacedPoints(8*POINTS);
+        
+        if (this.trainPosition >8*POINTS)
             this.trainPosition = 0;
         
-        const frpos = this.trainPosition;
+        //let currentCurvePosition = this.railCurve.getUtoTmapping(0, this.trainPosition);
+        
         const frames = this.frenetFrames;
-        const position = this.railCurve.getPointAt(frpos/(this.frenetFrames.normals.length - 1));
+        const position = curvePoints[this.trainPosition];//this.railCurve.getPointAt(currentCurvePosition);
         
+        const ffposition = this.trainPosition / 8;//currentCurvePosition; * (this.frenetFrames.normals.length - 1)
                 // Promedio de la normal
-        let frameNormals = frames.normals[Math.floor(this.trainPosition)].clone();
-        let frameBinormals = frames.binormals[Math.floor(this.trainPosition)].clone();
-        let frameTangents = frames.tangents[Math.floor(this.trainPosition)].clone();
+        let frameNormals = frames.normals[Math.floor(ffposition)].clone();
+        let frameBinormals = frames.binormals[Math.floor(ffposition)].clone();
+        let frameTangents = frames.tangents[Math.floor(ffposition)].clone();
         
-        frameNormals.lerp(frames.normals[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
-        frameBinormals.lerp(frames.binormals[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
-        frameTangents.lerp(frames.tangents[Math.ceil(this.trainPosition)], this.trainPosition - Math.floor(this.trainPosition));
+        frameNormals.lerp(frames.normals[Math.ceil(ffposition)], ffposition - Math.floor(ffposition));
+        frameBinormals.lerp(frames.binormals[Math.ceil(ffposition)], ffposition - Math.floor(ffposition));
+        frameTangents.lerp(frames.tangents[Math.ceil(ffposition)], ffposition - Math.floor(ffposition));
         
         let rotation = new THREE.Matrix4();
         rotation.makeRotationX(Math.PI);
@@ -536,6 +549,7 @@ export class RollerCoaster extends THREE.Object3D {
         }
         
         const geometry = new ParametricGeometry( ParamFunc, 20, POINTS -1);
+        //geometry.computeVertexNormals();
         const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: false, wireframe: false});
         const mesh = new THREE.Mesh( geometry, material );
         
@@ -642,7 +656,7 @@ export class RollerCoaster extends THREE.Object3D {
                         target.set(output.x, output.y, output.z);
                         
                         //Al top 10% le aplicamos la matriz de posicionamiento de borde (i.e. inclina la cara siguiendo la dirección de la superficie)
-                        if (v < 0.1 && (topFrameTangents.y < -0.6 || topFrameTangents.y > 0.6))
+                        if (v < 0.1 && (topFrameTangents.y < -0.55 || topFrameTangents.y > 0.55))
                         {
                             let heightCorrection = target.clone(); // Usamos este vector para obtener la corrección de altura de la punta
                             heightCorrection.applyQuaternion(quaternion);
@@ -655,13 +669,15 @@ export class RollerCoaster extends THREE.Object3D {
                         return target;
                     }
                     
-                    const columnGeometry = new ParametricGeometry( ParamFunc, 32, 8);
-                    const columnMaterial = new THREE.MeshPhongMaterial({ color: 0x00FF11, flatShading: false, wireframe: false});
+                    const columnGeometry = new ParametricGeometry( ParamFunc, 32, 3);
+                    const columnMaterial = new THREE.MeshPhongMaterial({ color: 0xD3D3D3, flatShading: false, wireframe: false});
+                    
                     const column = new THREE.Mesh( columnGeometry, columnMaterial );
         
                     column.position.set(columnPos.x, 0, columnPos.z);
             
                     this.add(column);
+
                 }
                 
                 arclen = 0;

@@ -6,6 +6,7 @@ import * as dat from 'dat.gui';
 
 import { RollerCoaster } from './rollerCoaster.js';
 import { Train } from './train.js';
+import { FlyingChairs } from './flyingChairs.js';
 
 const POINTS = 300;
 
@@ -14,7 +15,8 @@ export class SceneManager {
 	constructor(scene) {
 		const light = new THREE.DirectionalLight(0xffffff, 1);
 
-		light.position.set(0, 5, 0);
+		light.position.set(2, 5, 0);
+		light.lookAt(0,0,0);
 		scene.add(light);
 
 		const ambientLight = new THREE.AmbientLight(0x666666);
@@ -29,11 +31,21 @@ export class SceneManager {
 		scene.add(this.rollerCoaster);
 		
 		this.train = new Train();
-		this.train.scale.x = 0.125;
-		this.train.scale.y = 0.125;
-		this.train.scale.z = 0.125;
 		
 		this.rollerCoaster.addTrain(this.train);
+		
+		this.flyingChairs = new FlyingChairs();
+		this.flyingChairs.position.z = -3.3;
+		this.flyingChairs.position.x = -3;
+		scene.add(this.flyingChairs);
+		
+		const groundGeometry = new THREE.PlaneGeometry( 100, 100 );
+		const groundMaterial = new THREE.MeshPhongMaterial( {color: 0x00ff00} );
+		const ground = new THREE.Mesh( groundGeometry, groundMaterial );
+
+		ground.rotation.x = -Math.PI/2;
+		
+		scene.add(ground);
 		
 		this.properties =
 		{
@@ -139,12 +151,10 @@ export class SceneManager {
 	{
 		this.train.add(c1);
 		this.train.add(c2);
-		
-		const helper = new THREE.CameraHelper( c2 );
-		this.scene.add(helper);
 	}
 
 	animate() {
 		this.rollerCoaster.animate();
+		this.flyingChairs.animate();
 	}
 }
