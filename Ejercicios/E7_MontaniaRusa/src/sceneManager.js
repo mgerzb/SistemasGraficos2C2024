@@ -154,6 +154,9 @@ export class SceneManager {
 		Back.name = CamerasId.TrainBack;
 		Side.name = CamerasId.TrainSide;
 		
+		const helper = new THREE.CameraHelper( Side );
+		this.scene.add( helper );
+		
 		this.rollerCoaster.add(Front);
 		this.rollerCoaster.add(Back);
 		this.rollerCoaster.add(Side);

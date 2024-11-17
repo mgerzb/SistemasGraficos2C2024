@@ -104,7 +104,7 @@ function animate() {
 	requestAnimationFrame(animate);
 	sceneManager.animate();
 	renderer.render(scene, camera);
-	trainBackRenderer.render(scene, trainCameraBack);
+	trainBackRenderer.render(scene, trainCameraSide);
 	trainFrontRenderer.render(scene, trainCameraFront);
 }
 

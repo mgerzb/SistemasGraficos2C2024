@@ -306,7 +306,8 @@ export class RollerCoaster extends THREE.Object3D {
         
         FrontPosition.makeTranslation(0, 0.01, -0.01); 
         BackRotation.makeRotationZ(Math.PI);
-        SideRotation.makeRotationY(Math.PI/2);
+        
+        SideRotation.makeRotationFromEuler(new THREE.Euler(-0.65, Math.PI/2, Math.PI, 'ZYX'));
         
         let FrontMatrix = new THREE.Matrix4();
         FrontMatrix.set(  frameNormals.x,frameBinormals.x, frameTangents.x, position.x + 0.15 * -frameBinormals.x,
@@ -324,7 +325,7 @@ export class RollerCoaster extends THREE.Object3D {
         let SidePosition = BackPosition.clone();
         
         BackPosition.makeTranslation(0, 0.025, -0.08); 
-        SidePosition.makeTranslation(1, 0.025, -0.08); 
+        SidePosition.makeTranslation(-0.04, 0.005, 0.25); 
         
         BackMatrix.multiply(BackRotation);
         BackMatrix.multiply(BackPosition);
