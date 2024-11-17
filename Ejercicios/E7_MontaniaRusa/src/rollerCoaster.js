@@ -225,7 +225,6 @@ export class RollerCoaster extends THREE.Object3D {
     addTrain(train)
     {
         this.train = train;
-        let otherTrain = train.clone();
         this.train.matrixAutoUpdate = false;
         this.trainPosition = 0;
         this.add(train);
@@ -234,9 +233,6 @@ export class RollerCoaster extends THREE.Object3D {
         train.position.y += -0.09;
         
         this.trainSpeed = 1;
-        
-        otherTrain.position.z += 1.8;
-        train.add(otherTrain);
         
         this.animate();
     }
