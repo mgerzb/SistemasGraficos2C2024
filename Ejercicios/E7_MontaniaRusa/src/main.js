@@ -9,11 +9,11 @@ import { SceneManager } from './sceneManager.js';
 let scene, renderer, trainBackRenderer, trainFrontRenderer, trainBackContainer, trainFronContainer, container, sceneManager;
 let fpvControls, orbitControls;
 let LastUpdateTime;
-let OrbitCamera, fpvCamera;
+let orbitCamera, fpvCamera;
 let trainCameraFront, trainCameraBack, trainCameraSide;
 let sun, sky;
 
-let cameras = [OrbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide];
+let cameras = [orbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide];
 // Camera por defecto
 let currentCamera = 0;
 
@@ -45,9 +45,9 @@ function setupThreeJs() {
 
 	container.appendChild(renderer.domElement);
 
-	OrbitCamera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight), 0.1, 100);
-	OrbitCamera.position.set(3, 2, 1);
-	OrbitCamera.lookAt(0,0,0);
+	orbitCamera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight), 0.1, 100);
+	orbitCamera.position.set(3, 2, 1);
+	orbitCamera.lookAt(0,0,0);
 	
 	fpvCamera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight), 0.1, 100);
 	fpvCamera.position.set(0, FPVHeight, 0);
@@ -59,14 +59,14 @@ function setupThreeJs() {
 	sceneManager = new SceneManager(scene);
 	sceneManager.addTrainCameras(trainCameraFront, trainCameraBack, trainCameraSide);
 
-	orbitControls = new OrbitControls(OrbitCamera, renderer.domElement);
+	orbitControls = new OrbitControls(orbitCamera, renderer.domElement);
 	
 	fpvControls = new FixedFPVControls(fpvCamera, renderer.domElement);
 	fpvControls.lookSpeed = 0.03;
 	fpvControls.movementSpeed = 0.5;
 	fpvControls.enabled = false;
 	
-	cameras = [OrbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide];
+	cameras = [orbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide];
 
 	window.addEventListener('resize', onResize);
 	document.addEventListener('keydown', onKeyPress);
