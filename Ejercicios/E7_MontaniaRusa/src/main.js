@@ -1,16 +1,42 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { Sky } from 'three/addons/objects/Sky.js';
 
 import { SceneManager } from './sceneManager.js';
-let scene, camera, renderer, trainBackRenderer, trainFrontRenderer, trainBackContainer, trainFronContainer, container, sceneManager;
-let trainCameraBack, trainCameraFront, trainCameraSide;
+
+let scene, renderer, trainBackRenderer, trainFrontRenderer, trainBackContainer, trainFronContainer, container, sceneManager;
+let fpvControls, orbitControls;
+let LastUpdateTime;
+let OrbitCamera, fpvCamera;
+let trainCameraFront, trainCameraBack, trainCameraSide;
 let sun, sky;
+
+let cameras = [OrbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide];
+// Camera por defecto
+let currentCamera = 0;
+
+// Altura de la camara FPV
+const FPVHeight = 0.2;
+
+// Fija el movimiento de la camara FP al suelo
+class FixedFPVControls extends FirstPersonControls
+{
+	constructor(camera, dom)
+	{
+		super(camera, dom);
+	}
+	
+	extendedUpdate(delta)
+	{
+		this.update(delta);
+		fpvCamera.position.y = FPVHeight;
+	}
+}
 
 function setupThreeJs() {
 	container = document.getElementById('container3D');
-	trainBackContainer = document.getElementById('container3DC1');
-	trainFronContainer = document.getElementById('container3DC2');
 
 	renderer = new THREE.WebGLRenderer();
 	trainBackRenderer = new THREE.WebGLRenderer();
@@ -18,29 +44,64 @@ function setupThreeJs() {
 	scene = new THREE.Scene();
 
 	container.appendChild(renderer.domElement);
-	trainBackContainer.appendChild(trainBackRenderer.domElement);
-	trainFronContainer.appendChild(trainFrontRenderer.domElement);
 
-	camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight *0.5), 0.1, 100);
-	camera.position.set(5, 4, 1);
-	camera.lookAt(0, 0, 0);
-	//camera.scale.set(0.1,0.1,0.1);
+	OrbitCamera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight), 0.1, 100);
+	OrbitCamera.position.set(3, 2, 1);
+	OrbitCamera.lookAt(0,0,0);
 	
-	trainCameraBack = new THREE.PerspectiveCamera(45, (window.innerWidth*0.5) / (window.innerHeight*0.25), 0.1, 100);
+	fpvCamera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight), 0.1, 100);
+	fpvCamera.position.set(0, FPVHeight, 0);
+	
 	trainCameraFront = new THREE.PerspectiveCamera(45, (window.innerWidth*0.5) / (window.innerHeight*0.25), 0.1, 100);
+	trainCameraBack = new THREE.PerspectiveCamera(45, (window.innerWidth*0.5) / (window.innerHeight*0.25), 0.1, 100);
 	trainCameraSide= new THREE.PerspectiveCamera(45, (window.innerWidth*0.5) / (window.innerHeight*0.25), 0.1, 100);
 	
 	sceneManager = new SceneManager(scene);
-	sceneManager.addTrainCameras(trainCameraBack, trainCameraFront, trainCameraSide);
+	sceneManager.addTrainCameras(trainCameraFront, trainCameraBack, trainCameraSide);
 
-	const controls = new OrbitControls(camera, renderer.domElement);
+	orbitControls = new OrbitControls(OrbitCamera, renderer.domElement);
+	
+	fpvControls = new FixedFPVControls(fpvCamera, renderer.domElement);
+	fpvControls.lookSpeed = 0.03;
+	fpvControls.movementSpeed = 0.5;
+	fpvControls.enabled = false;
+	
+	cameras = [OrbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide];
 
 	window.addEventListener('resize', onResize);
+	document.addEventListener('keydown', onKeyPress);
+	
 	onResize();
 	
 	initSky();
 
 	scene.fog = new THREE.Fog( 0x7c503f, 35, 80);
+	
+	LastUpdateTime = Date.now();
+}
+
+function onKeyPress(event)
+{
+	switch (event.key)
+	{
+		case 'c':
+			SwitchCamera();
+			break;
+	}
+}
+
+function SwitchCamera()
+{
+	currentCamera += 1;
+	currentCamera = currentCamera % cameras.length;
+	
+	ConfigureControls();
+}
+
+function ConfigureControls()
+{
+	fpvControls.enabled = currentCamera == 1;
+	orbitControls.enabled = currentCamera == 0;
 }
 
 const effectController = {
@@ -80,32 +141,29 @@ function guiChanged() {
 	
 	uniforms[ 'sunPosition' ].value.copy( sun );
 	
-	//renderer.toneMappingExposure = effectController.exposure;
-	renderer.render( scene, camera );
-	
 }
 
 function onResize() {
-	camera.aspect = container.offsetWidth / container.offsetHeight;
-	camera.updateProjectionMatrix();
-	
-	trainCameraSide.aspect = trainBackContainer.offsetWidth / trainBackContainer.offsetHeight;
-	trainCameraSide.updateProjectionMatrix();
-	
-	trainCameraFront.aspect = trainFronContainer.offsetWidth / trainFronContainer.offsetHeight;
-	trainCameraFront.updateProjectionMatrix();
+	for (let i = 0; i < cameras.length; i++)
+	{
+		cameras[i].aspect = container.offsetWidth / container.offsetHeight;
+		cameras[i].updateProjectionMatrix();
+	}
 
 	renderer.setSize(container.offsetWidth, container.offsetHeight);
-	trainBackRenderer.setSize(trainBackContainer.offsetWidth, trainBackContainer.offsetHeight);
-	trainFrontRenderer.setSize(trainFronContainer.offsetWidth, trainFronContainer.offsetHeight);
+	fpvControls.handleResize();
 }
 
 function animate() {
 	requestAnimationFrame(animate);
+	// TimeElapse since last animate call
+	const Delta = Date.now() - LastUpdateTime;
+
+	LastUpdateTime = Date.now();
+	fpvControls.extendedUpdate(0.08);
+	
 	sceneManager.animate();
-	renderer.render(scene, camera);
-	trainBackRenderer.render(scene, trainCameraSide);
-	trainFrontRenderer.render(scene, trainCameraFront);
+	renderer.render(scene, cameras[currentCamera]);
 }
 
 setupThreeJs();

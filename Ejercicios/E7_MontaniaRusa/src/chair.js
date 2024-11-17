@@ -15,12 +15,15 @@ export class Chair extends THREE.Object3D {
         this.len = length;
         this.width = width;
         
+        const backWidth = 0.20; // Percetage
+        const seatWidth = 0.2;
+        
         // Puntos con la forma de L
         let points = {
             topA: new THREE.Vector3(0, this.len, 0),
-            topB: new THREE.Vector3(this.len * 0.15, this.len, 0),
-            midB: new THREE.Vector3(this.len * 0.15, this.len * 0.15, 0),
-            midC: new THREE.Vector3(this.len, this.len * 0.15, 0),
+            topB: new THREE.Vector3(this.len * backWidth, this.len, 0),
+            midB: new THREE.Vector3(this.len * backWidth, this.len * seatWidth, 0),
+            midC: new THREE.Vector3(this.len, this.len * seatWidth, 0),
             botC: new THREE.Vector3(this.len, 0, 0),
             botA: new THREE.Vector3(0, 0, 0)
         }
