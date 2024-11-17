@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
 import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGeometries.js";
 
+import { Chair } from './chair.js';
+
 export class Train extends THREE.Object3D {
     
     constructor() {
@@ -45,11 +47,25 @@ export class Train extends THREE.Object3D {
         BackCap.position.z = -dist*3;
         BackCap.rotation.x = -Math.PI/2;
         
+        const FrontChair = new Chair(0.3, 0.50);
+        
+        FrontChair.position.z = -0.45;
+        FrontChair.position.y = 0.17;
+        FrontChair.position.x = -0.25;
+        FrontChair.rotation.y = Math.PI/2;
+        
+        const BackChair = FrontChair.clone();
+        
+        BackChair.position.z = -0.05;
+        
         this.add(Top);
         this.add(End);
         this.add(Body);
         this.add(FrontCap);
         this.add(BackCap);
+        this.add(FrontChair);
+        this.add(BackChair);
+        
     }
     
     getPartsDrawingFunction(slices, dist, radius, length, width, escalex, escaley, closed=true)

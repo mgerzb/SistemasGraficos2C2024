@@ -299,6 +299,7 @@ export class RollerCoaster extends THREE.Object3D {
         let SideRotation = FrontPosition.clone();
         
         FrontPosition.makeTranslation(0, 0.01, -0.01); 
+        
         BackRotation.makeRotationZ(Math.PI);
         SideRotation.makeRotationFromEuler(new THREE.Euler(-0.65, Math.PI/2, Math.PI, 'ZYX'));
         
