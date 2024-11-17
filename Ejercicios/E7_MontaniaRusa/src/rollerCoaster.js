@@ -3,6 +3,8 @@ import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.j
 import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGeometries.js";
 import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
 
+import { CamerasId } from './constants.js';
+
 const POINTS = 400;
 
 export class RollerCoaster extends THREE.Object3D {
@@ -272,10 +274,67 @@ export class RollerCoaster extends THREE.Object3D {
                 frameNormals.y,frameBinormals.y, frameTangents.y, position.y + 0.1 * -frameBinormals.y,
                 frameNormals.z,frameBinormals.z, frameTangents.z, position.z + 0.1 * -frameBinormals.z,
                 0, 0, 0, 1);
+        
+        let FrontCamera = this.getObjectByName(CamerasId.TrainFront);
+        let BackCamera = this.getObjectByName(CamerasId.TrainBack);
+        let SideCamera = this.getObjectByName(CamerasId.TrainSide);
+        
+        if (FrontCamera && BackCamera && SideCamera)
+        {
+            this.animateCameras(FrontCamera, BackCamera, SideCamera, frameNormals, frameBinormals, frameTangents, position);
+        }
+
+        
         rotation.multiply(scale);
         m.multiply(rotation);
         
         this.train.matrix = m;
+    }
+    
+    animateCameras(FrontCamera, BackCamera, SideCamera, frameNormals, frameBinormals, frameTangents, position)
+    {
+        FrontCamera.matrixAutoUpdate = false;
+        BackCamera.matrixAutoUpdate = false;
+        SideCamera.matrixAutoUpdate = false;
+        
+        let FrontRotation = new THREE.Matrix4();
+        FrontRotation.makeRotationX(Math.PI);
+        
+        let FrontPosition = new THREE.Matrix4();
+        let BackRotation = FrontPosition.clone();
+        let SideRotation = FrontPosition.clone();
+        
+        FrontPosition.makeTranslation(0, 0.01, -0.01); 
+        BackRotation.makeRotationZ(Math.PI);
+        SideRotation.makeRotationY(Math.PI/2);
+        
+        let FrontMatrix = new THREE.Matrix4();
+        FrontMatrix.set(  frameNormals.x,frameBinormals.x, frameTangents.x, position.x + 0.15 * -frameBinormals.x,
+                          frameNormals.y,frameBinormals.y, frameTangents.y, position.y + 0.15 * -frameBinormals.y,
+                          frameNormals.z,frameBinormals.z, frameTangents.z, position.z + 0.15 * -frameBinormals.z,
+                          0, 0, 0, 1);
+        
+        let BackMatrix = FrontMatrix.clone();
+        let SideMatrix = FrontMatrix.clone();
+        
+        FrontMatrix.multiply(FrontRotation);
+        FrontMatrix.multiply(FrontPosition);
+        
+        let BackPosition = new THREE.Matrix4();
+        let SidePosition = BackPosition.clone();
+        
+        BackPosition.makeTranslation(0, 0.025, -0.08); 
+        SidePosition.makeTranslation(1, 0.025, -0.08); 
+        
+        BackMatrix.multiply(BackRotation);
+        BackMatrix.multiply(BackPosition);
+        
+        SideMatrix.multiply(SideRotation);
+        SideMatrix.multiply(SidePosition);
+        
+        FrontCamera.matrix = FrontMatrix;
+        BackCamera.matrix = BackMatrix;
+        SideCamera.matrix = SideMatrix;
     }
     
     wireframe(enable)

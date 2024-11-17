@@ -3,6 +3,7 @@ import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.j
 import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGeometries.js";
 
 import * as dat from 'dat.gui';
+import { CamerasId } from  './constants.js';
 
 import { RollerCoaster } from './rollerCoaster.js';
 import { Train } from './train.js';
@@ -13,7 +14,7 @@ const POINTS = 300;
 export class SceneManager {
 	
 	constructor(scene) {
-		const light = new THREE.DirectionalLight(0xffffff, 1);
+		const light = new THREE.DirectionalLight(0xffffff, 1.1);
 
 		light.position.set(2, 5, 0);
 		light.lookAt(0,0,0);
@@ -39,7 +40,7 @@ export class SceneManager {
 		this.flyingChairs.position.x = -3;
 		scene.add(this.flyingChairs);
 		
-		const groundGeometry = new THREE.PlaneGeometry( 100, 100 );
+		const groundGeometry = new THREE.PlaneGeometry( 1000, 1000 );
 		const groundMaterial = new THREE.MeshPhongMaterial( {color: 0x00ff00} );
 		const ground = new THREE.Mesh( groundGeometry, groundMaterial );
 
@@ -147,10 +148,15 @@ export class SceneManager {
 			.onChange((value) => {this.rollerCoaster.flatShading(value)});
 	}
 	
-	addTrainCameras(c1, c2)
+	addTrainCameras(Front, Back, Side)
 	{
-		this.train.add(c1);
-		this.train.add(c2);
+		Front.name = CamerasId.TrainFront;
+		Back.name = CamerasId.TrainBack;
+		Side.name = CamerasId.TrainSide;
+		
+		this.rollerCoaster.add(Front);
+		this.rollerCoaster.add(Back);
+		this.rollerCoaster.add(Side);
 	}
 
 	animate() {
