@@ -246,13 +246,11 @@ export class RollerCoaster extends THREE.Object3D {
         if (this.trainPosition >8*POINTS)
             this.trainPosition = 0;
         
-        //let currentCurvePosition = this.railCurve.getUtoTmapping(0, this.trainPosition);
-        
         const frames = this.frenetFrames;
         const position = curvePoints[this.trainPosition];//this.railCurve.getPointAt(currentCurvePosition);
         
         const ffposition = this.trainPosition / 8;//currentCurvePosition; * (this.frenetFrames.normals.length - 1)
-                // Promedio de la normal
+        // Promedio de la normal
         let frameNormals = frames.normals[Math.floor(ffposition)].clone();
         let frameBinormals = frames.binormals[Math.floor(ffposition)].clone();
         let frameTangents = frames.tangents[Math.floor(ffposition)].clone();
@@ -302,7 +300,6 @@ export class RollerCoaster extends THREE.Object3D {
         
         FrontPosition.makeTranslation(0, 0.01, -0.01); 
         BackRotation.makeRotationZ(Math.PI);
-        
         SideRotation.makeRotationFromEuler(new THREE.Euler(-0.65, Math.PI/2, Math.PI, 'ZYX'));
         
         let FrontMatrix = new THREE.Matrix4();
