@@ -104,7 +104,7 @@ export class SceneManager {
 		}
 		
 		const geometry = new ParametricGeometry( ParamFunc, 6, 25 );
-		const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: true });
+		const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: false });
 		const mesh = new THREE.Mesh( geometry, material );
 		this.baseScene.add( mesh );
 	
@@ -150,7 +150,7 @@ export class SceneManager {
 		
 		// Direction path
 		let line = new THREE.CurvePath();
-		line.add(new THREE.LineCurve3(new THREE.Vector3( 3, 0, 0 ), new THREE.Vector3( 3, 10, 0 )));
+		line.add(new THREE.LineCurve3(new THREE.Vector3( 3, 0, 0 ), new THREE.Vector3( 3, 6, 0 )));
 		
 		let ParamFunc = function (u, v, target) {
 			target.copy(curve.getPointAt(u)); // This cure returns a 2D vector
@@ -159,13 +159,13 @@ export class SceneManager {
 			target.z = target.y;  // We set Y at Z, as we use Y as th path to follow
 			target.y = position.y;
 			
-			let ScaleIdx =Math.abs(Math.cos(2*Math.PI*v)) + 1;
+			let ScaleIdx =0.5 * Math.abs(Math.cos(5*Math.PI*v)) + 1;
 			Scale.makeScale(ScaleIdx, 1, ScaleIdx);
 			target.applyMatrix4(Scale);
 		}
 		
 		const geometry = new ParametricGeometry( ParamFunc, 16, 25 );
-		const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: false });
+		const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: false, side: THREE.DoubleSide});
 		const mesh = new THREE.Mesh( geometry, material );
 		mesh.position.x = 3;
 		this.baseScene.add( mesh );

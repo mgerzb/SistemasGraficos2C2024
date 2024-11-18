@@ -215,6 +215,13 @@ export class RollerCoaster extends THREE.Object3D {
         
         this.add(this.rcMesh);
         
+        this.scaledTunnel = this.buildScaledTunnel();
+        this.scaledTunnel.position.set(-4.8, 0.5, 1.1);
+        this.scaledTunnel.rotation.y = -Math.PI/20;
+        this.scaledTunnel.rotation.x = -0.045;
+        
+        this.add(this.scaledTunnel);
+        
         this.helpers = {
             normals: [],
             tangents: [],
@@ -740,4 +747,42 @@ export class RollerCoaster extends THREE.Object3D {
         }
         
     }
+    
+    buildScaledTunnel()
+	{
+        const circleRadius = 0.2;
+        const tunnelColor = 0
+		// First we create the circle
+		const curve = new THREE.EllipseCurve(
+			0,  0,            // ax, aY
+			circleRadius, circleRadius,           // xRadius, yRadius
+			0,  2 * Math.PI,  // aStartAngle, aEndAngle
+			true,            // aClockwise
+			0,                 // aRotation
+		);
+		
+		const Scale = new THREE.Matrix4();
+		
+		//Recorrido
+		let line = new THREE.CurvePath();
+		line.add(new THREE.LineCurve3(new THREE.Vector3( 0, 0, -0.45 ), new THREE.Vector3( 0, 0, 0.45 )));
+		
+		let ParamFunc = function (u, v, target) {
+			target.copy(curve.getPointAt(u)); // This cure returns a 2D vector
+			let position = line.getPointAt(v);
+			
+			target.z = position.z;
+			
+			let ScaleIdx =0.5 * Math.abs(Math.cos(5*Math.PI*v)) + 1;
+			Scale.makeScale(ScaleIdx, ScaleIdx, 1);
+			target.applyMatrix4(Scale);
+		}
+		
+		const geometry = new ParametricGeometry( ParamFunc, 16, 25 );
+		const material = new THREE.MeshPhongMaterial({ color: 0x03fcec, flatShading: false, side: THREE.DoubleSide});
+		const mesh = new THREE.Mesh( geometry, material );
+		
+        return mesh;
+        
+	}
 }
