@@ -222,6 +222,13 @@ export class RollerCoaster extends THREE.Object3D {
         
         this.add(this.scaledTunnel);
         
+        this.twistedTunnel = this.buildTwistedTunnel();
+        this.twistedTunnel.position.set(0.07, 1.25, 7.5);
+        this.twistedTunnel.rotation.y = Math.PI/8;
+        this.twistedTunnel.rotation.x = -0.08;
+        
+        this.add(this.twistedTunnel);
+        
         this.helpers = {
             normals: [],
             tangents: [],
@@ -783,6 +790,49 @@ export class RollerCoaster extends THREE.Object3D {
 		const mesh = new THREE.Mesh( geometry, material );
 		
         return mesh;
-        
 	}
+	
+	buildTwistedTunnel()
+    {
+        let ParamFunc = function (u, v, target) {
+            const lengthFactor = 0.85;
+            const sizeFactor = 1.9;
+            
+            const Rot = new THREE.Matrix4();
+            Rot.makeRotationZ(Math.PI * v);
+            
+            if (u <= 0.25)
+            {
+                target.set(-sizeFactor/8 + sizeFactor*u, -sizeFactor/8, lengthFactor*v);
+                target.applyMatrix4(Rot);
+                return;
+            }
+            
+            if (u <= 0.5)
+            {
+                target.set(sizeFactor/8, -sizeFactor/8 + sizeFactor*(u - 0.25), lengthFactor*v);
+                target.applyMatrix4(Rot);
+                return;
+            }
+            
+            if (u <= 0.75)
+            {
+                target.set(sizeFactor/8 + (0.5 - u) * sizeFactor, sizeFactor/8, lengthFactor*v);
+                target.applyMatrix4(Rot);
+                return;
+            }
+            
+            target.set(-sizeFactor/8, sizeFactor/8 + (0.75 - u) * sizeFactor , lengthFactor*v);
+            target.applyMatrix4(Rot);
+            
+        }
+        
+        //const geometry = new ParametricGeometry( ParametricGeometries.klein, 25, 25 );
+        const geometry = new ParametricGeometry( ParamFunc, 4, 50 );
+        const material = new THREE.MeshPhongMaterial({ color: 0xed912f, flatShading: false, side: THREE.DoubleSide });
+        const mesh = new THREE.Mesh( geometry, material );
+        
+        return mesh;
+
+    }
 }
