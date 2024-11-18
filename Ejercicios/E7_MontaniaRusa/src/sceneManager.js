@@ -148,15 +148,20 @@ export class SceneManager {
 			.onChange((value) => {this.rollerCoaster.flatShading(value)});
 	}
 	
-	addTrainCameras(Front, Back, Side)
+	addTrainCameras(front, back, side)
 	{
-		Front.name = CamerasId.TrainFront;
-		Back.name = CamerasId.TrainBack;
-		Side.name = CamerasId.TrainSide;
+		front.name = CamerasId.TrainFront;
+		back.name = CamerasId.TrainBack;
+		side.name = CamerasId.TrainSide;
 		
-		this.rollerCoaster.add(Front);
-		this.rollerCoaster.add(Back);
-		this.rollerCoaster.add(Side);
+		this.rollerCoaster.add(front);
+		this.rollerCoaster.add(back);
+		this.rollerCoaster.add(side);
+	}
+	
+	addFlyingChairCamera(Camera)
+	{
+		this.flyingChairs.chairs[0].add(Camera);
 	}
 
 	animate() {

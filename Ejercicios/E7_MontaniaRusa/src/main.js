@@ -8,9 +8,9 @@ import { SceneManager } from './sceneManager.js';
 
 let scene, renderer, trainBackRenderer, trainFrontRenderer, trainBackContainer, trainFronContainer, container, sceneManager;
 let fpvControls, orbitControls;
-let LastUpdateTime;
+let lastUpdateTime;
 let orbitCamera, fpvCamera;
-let trainCameraFront, trainCameraBack, trainCameraSide;
+let trainCameraFront, trainCameraBack, trainCameraSide, flyingChairCamera;
 let sun, sky;
 
 let cameras = [orbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide];
@@ -52,13 +52,18 @@ function setupThreeJs() {
 	fpvCamera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight), 0.1, 100);
 	fpvCamera.position.set(0, FPVHeight, 0);
 	
-	trainCameraFront = new THREE.PerspectiveCamera(45, (window.innerWidth*0.5) / (window.innerHeight*0.25), 0.1, 100);
-	trainCameraBack = new THREE.PerspectiveCamera(45, (window.innerWidth*0.5) / (window.innerHeight*0.25), 0.1, 100);
-	trainCameraSide= new THREE.PerspectiveCamera(45, (window.innerWidth*0.5) / (window.innerHeight*0.25), 0.1, 100);
+	// Camaras para el vagon
+	trainCameraFront = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+	trainCameraBack = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+	trainCameraSide = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+	
+	flyingChairCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+	flyingChairCamera.position.set(0, -0.93, 0);
 	
 	sceneManager = new SceneManager(scene);
 	sceneManager.addTrainCameras(trainCameraFront, trainCameraBack, trainCameraSide);
-
+	sceneManager.addFlyingChairCamera(flyingChairCamera);
+	
 	orbitControls = new OrbitControls(orbitCamera, renderer.domElement);
 	
 	fpvControls = new FixedFPVControls(fpvCamera, renderer.domElement);
@@ -66,7 +71,7 @@ function setupThreeJs() {
 	fpvControls.movementSpeed = 0.5;
 	fpvControls.enabled = false;
 	
-	cameras = [orbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide];
+	cameras = [orbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide, flyingChairCamera];
 
 	window.addEventListener('resize', onResize);
 	document.addEventListener('keydown', onKeyPress);
@@ -77,7 +82,7 @@ function setupThreeJs() {
 
 	scene.fog = new THREE.Fog( 0x7c503f, 35, 80);
 	
-	LastUpdateTime = Date.now();
+	lastUpdateTime = Date.now();
 }
 
 function onKeyPress(event)
@@ -157,9 +162,9 @@ function onResize() {
 function animate() {
 	requestAnimationFrame(animate);
 	// TimeElapse since last animate call
-	const Delta = Date.now() - LastUpdateTime;
+	const Delta = Date.now() - lastUpdateTime;
 
-	LastUpdateTime = Date.now();
+	lastUpdateTime = Date.now();
 	fpvControls.extendedUpdate(0.08);
 	
 	sceneManager.animate();
