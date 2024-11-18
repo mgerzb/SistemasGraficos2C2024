@@ -56,12 +56,13 @@ export class SceneManager {
 			showRLTangents: false,
 			showRLBinormals: false,
 			showRLWireframe: false,
-			showRLFlatShading: false
+			showRLFlatShading: false,
+			
+			cameras: "t1"
 		}
 		
 		this.scene = scene;
 		
-		this.setupUI(this);
 		this.rLHelpersUpdate();
 		this.worldHelpersUpdate();
 		
@@ -102,9 +103,8 @@ export class SceneManager {
 		this.properties.showAxes ? this.scene.add(this.axes):this.scene.remove(this.axes);
 	}
 	
-	setupUI(Manager)
+	setupUI(gui)
 	{
-		let gui = new dat.GUI();
 		let f1 = gui.addFolder('Helpers');
 		
 		this.setupWorldHelpers(f1);

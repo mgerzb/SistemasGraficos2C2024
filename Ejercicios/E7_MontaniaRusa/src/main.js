@@ -6,6 +6,8 @@ import { Sky } from 'three/addons/objects/Sky.js';
 
 import { SceneManager } from './sceneManager.js';
 
+import * as dat from 'dat.gui';
+
 let scene, renderer, trainBackRenderer, trainFrontRenderer, trainBackContainer, trainFronContainer, container, sceneManager;
 let fpvControls, orbitControls;
 let lastUpdateTime;
@@ -13,12 +15,42 @@ let orbitCamera, fpvCamera;
 let trainCameraFront, trainCameraBack, trainCameraSide, flyingChairCamera;
 let sun, sky;
 
-let cameras = [orbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide];
+let cameras;
 // Camera por defecto
-let currentCamera = 0;
+const options =
+{
+	currentCamera: 0,
+	currentCameraStr: "Orbital"
+}
+
+const CameraOptions = ["Orbital", "FPV", "Vagon Frente", "Vagon Trasero", "Vagon", "Silla Voladora", "Montaña Orbital", "Sillas Orbital"];
+const CamerasOptionsMap = 
+{
+	"Orbital": 0,
+	"FPV": 1,
+	"Vagon Frente": 2,
+	"Vagon Trasero": 3,
+	"Vagon": 4,
+	"Silla Voladora": 5,
+	"Montaña Orbital": 6,
+	"Sillas Orbital": 7
+}
+
+let cameraOptionsController;
 
 // Altura de la camara FPV
 const FPVHeight = 0.2;
+
+let orbitCameraAngle = new THREE.Vector3(3,2,1);
+
+// Indices para selección de posición para la camara orbital
+const sceneCenteredIdx = 0;
+const rollerCoasterIdx = 6;
+const flyingChairIdx = 7;
+
+// El modelo de la Montaña Rusa no está centrada, por lo que usamos este valor hardcodeado para posicionar la camara orbital
+let centeredPosition = new THREE.Vector3(0,0,0);
+let rollerCoasterPosition = new THREE.Vector3(-3, 0, 5);
 
 // Fija el movimiento de la camara FP al suelo
 class FixedFPVControls extends FirstPersonControls
@@ -29,7 +61,7 @@ class FixedFPVControls extends FirstPersonControls
 	}
 	
 	extendedUpdate(delta)
-	{
+	{ 
 		this.update(delta);
 		fpvCamera.position.y = FPVHeight;
 	}
@@ -46,8 +78,8 @@ function setupThreeJs() {
 	container.appendChild(renderer.domElement);
 
 	orbitCamera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight), 0.1, 100);
-	orbitCamera.position.set(3, 2, 1);
-	orbitCamera.lookAt(0,0,0);
+	orbitCamera.position.copy(orbitCameraAngle);
+	orbitCamera.lookAt(centeredPosition.x, centeredPosition.y, centeredPosition.z);
 	
 	fpvCamera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight), 0.1, 100);
 	fpvCamera.position.set(0, FPVHeight, 0);
@@ -64,25 +96,35 @@ function setupThreeJs() {
 	sceneManager.addTrainCameras(trainCameraFront, trainCameraBack, trainCameraSide);
 	sceneManager.addFlyingChairCamera(flyingChairCamera);
 	
+	// Posiciones para la camara orbital de cada atracción
 	orbitControls = new OrbitControls(orbitCamera, renderer.domElement);
+	orbitControls.enablePan = false;
 	
 	fpvControls = new FixedFPVControls(fpvCamera, renderer.domElement);
 	fpvControls.lookSpeed = 0.03;
 	fpvControls.movementSpeed = 0.5;
 	fpvControls.enabled = false;
 	
-	cameras = [orbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide, flyingChairCamera];
+	cameras = [orbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide, flyingChairCamera, orbitCamera, orbitCamera];
 
 	window.addEventListener('resize', onResize);
 	document.addEventListener('keydown', onKeyPress);
 	
 	onResize();
-	
 	initSky();
+	
+	let gui = new dat.GUI();
+	cameraOptionsController = setupCameraOptions(gui);
+	sceneManager.setupUI(gui);
 
 	scene.fog = new THREE.Fog( 0x7c503f, 35, 80);
 	
 	lastUpdateTime = Date.now();
+}
+
+function setupCameraOptions(gui)
+{
+	return gui.add(options, "currentCameraStr", CameraOptions).name("Camaras").onChange((value) => {options.currentCamera = CamerasOptionsMap[value]; configureControls()});
 }
 
 function onKeyPress(event)
@@ -97,16 +139,45 @@ function onKeyPress(event)
 
 function SwitchCamera()
 {
-	currentCamera += 1;
-	currentCamera = currentCamera % cameras.length;
+	options.currentCamera += 1;
+	options.currentCamera = options.currentCamera % cameras.length;
 	
-	ConfigureControls();
+	options.currentCameraStr = CameraOptions[options.currentCamera];
+	
+	configureControls();
+	
+	// Actualiza la dat.ui para mostrar la nueva opción
+	cameraOptionsController.updateDisplay();
 }
 
-function ConfigureControls()
+function configureControls()
 {
-	fpvControls.enabled = currentCamera == 1;
-	orbitControls.enabled = currentCamera == 0;
+	fpvControls.enabled = options.currentCamera == 1;
+	orbitControls.enabled = options.currentCamera == sceneCenteredIdx || options.currentCamera == rollerCoasterIdx || options.currentCamera == flyingChairIdx;
+	
+	if (options.currentCamera == sceneCenteredIdx)
+	{
+		//orbitCamera.lookAt(centeredPosition.x, centeredPosition.y, centeredPosition.z);
+		orbitControls.target.copy(centeredPosition);
+		orbitControls.target0.copy(centeredPosition);
+		orbitControls.reset(); // Necesario para que se vuelva a alinear la camara
+	}
+	
+	if (options.currentCamera == rollerCoasterIdx)
+	{
+		//orbitCamera.lookAt(rollerCoasterPosition.x, rollerCoasterPosition.y, rollerCoasterPosition.z);
+		orbitControls.target.copy(rollerCoasterPosition);
+		orbitControls.target0.copy(rollerCoasterPosition);
+		orbitControls.reset();
+	}
+	
+	if (options.currentCamera == flyingChairIdx)
+	{
+		//orbitCamera.lookAt(sceneManager.flyingChairs.position.x, sceneManager.flyingChairs.position.y, sceneManager.flyingChairs.position.z);
+		orbitControls.target.copy(sceneManager.flyingChairs.position);
+		orbitControls.target0.copy(sceneManager.flyingChairs.position);
+		orbitControls.reset();
+	}
 }
 
 const effectController = {
@@ -168,7 +239,7 @@ function animate() {
 	fpvControls.extendedUpdate(0.08);
 	
 	sceneManager.animate();
-	renderer.render(scene, cameras[currentCamera]);
+	renderer.render(scene, cameras[options.currentCamera]);
 }
 
 setupThreeJs();
