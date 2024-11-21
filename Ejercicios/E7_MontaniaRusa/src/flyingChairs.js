@@ -34,7 +34,13 @@ export class FlyingChairs extends THREE.Object3D {
             baseColor: 0x36b2fa,
             axisColor: 0xAAAAAA,
             topColor: 0xf58b00,
-            chainColor: 0x151515
+            chainColor: 0x151515,
+            
+            
+            stopTime:  5000, // Seconds
+            runTime: 20000, // Seconds
+            acceleration: 0.001,
+            maxspeed: 0.02
         }
         
         this.chairRotPosition = 0;
@@ -70,6 +76,13 @@ export class FlyingChairs extends THREE.Object3D {
             
             this.top.add(chair);
         }
+        
+        this.inStoppageTime = true; // Flag para saber si está en modo reposo
+        this.stoppageTime = 0; // tiempo que estuvo en modo reposo
+        this.lastUpdateTime = 0; // Tiempo desde la última actividad de animate
+        this.currentAcceleration = -this.properties.acceleration;
+        this.currentSpeed = 0;
+        this.runningTime = 0;
         
     }
     
@@ -176,12 +189,98 @@ export class FlyingChairs extends THREE.Object3D {
         return chain;
     }
     
+    
+    // Función para calcular el ángulo theta dada la velocidad angular
+    calcularTheta(velangi, tolerancia = 1e-6, maxIter = 1000) {
+        // Inicializamos theta (ángulo en radianes, cerca de vertical para comenzar)
+        let theta = 0.1; // Valor inicial en radianes (pequeño ángulo)
+        let iter = 0;    // Contador de iteraciones
+        
+        const g = 9.8;
+        const R = this.properties.topWidth - 0.1;
+        const L = this.properties.chainLen;
+        
+        const velang = velangi * 80;
+        
+        while (iter < maxIter) {
+            // Calculamos f(theta) = tan(theta) - (velang^2 * (R + L * sin(theta)) / g)
+            let f = Math.tan(theta) - (velang ** 2 * (R + L * Math.sin(theta)) / g);
+            
+            // Calculamos la derivada f'(theta) = sec^2(theta) - (velang^2 * L * cos(theta) / g)
+            let df = (1 / Math.cos(theta)) ** 2 - (velang ** 2 * L * Math.cos(theta) / g);
+            
+            // Actualizamos theta usando el método de Newton-Raphson
+            let thetaNueva = theta - f / df;
+            
+            // Verificamos la convergencia
+            if (Math.abs(thetaNueva - theta) < tolerancia) {
+                return thetaNueva; // Retornamos el ángulo en radianes
+            }
+            
+            theta = thetaNueva; // Actualizamos theta
+            iter++;
+        }
+        
+        // Si no converge, lanzamos un error
+        throw new Error("No convergió después de " + maxIter + " iteraciones.");
+    }
+    
     animate()
     {
-        this.chairRotPosition += 0.01;
+        if (this.lastUpdateTime == 0)
+            this.lastUpdateTime = Date.now();
+
+        // TimeElapse since last animate call
+        const Delta = Date.now() - this.lastUpdateTime;
+        
+        if (Delta > 200)
+        {
+            if (this.inStoppageTime)
+            {
+                this.stoppageTime += Delta;
+                
+                if (this.stoppageTime >= this.properties.stopTime)
+                {
+                    this.stoppageTime = 0;
+                    this.inStoppageTime = false;
+                    this.currentAcceleration = this.properties.acceleration;
+                }
+                
+                this.currentSpeed += this.currentAcceleration;
+                
+                if (this.currentSpeed < 0)
+                {
+                    this.currentSpeed = 0;
+                }
+                
+            } else
+            {
+                this.runningTime += Delta;
+                if (this.runningTime >= this.properties.runTime)
+                {
+                    this.inStoppageTime = true;
+                    this.currentAcceleration = -this.properties.acceleration;
+                    this.runningTime = 0;
+                }
+                
+                this.currentSpeed += this.currentAcceleration;
+                
+                if (this.currentSpeed > this.properties.maxspeed)
+                {
+                    this.currentSpeed = this.properties.maxspeed;
+                }
+            }
+            
+            this.lastUpdateTime = Date.now();
+        }
+        
+
+        this.chairRotPosition += this.currentSpeed;
         
         this.top.rotation.y = this.chairRotPosition;
-        this.chairs.map(function(chair) {chair.rotation.z = Math.PI/6;});
+        let angle = this.calcularTheta(this.currentSpeed);
+        
+        this.chairs.map(function(chair) {chair.rotation.z = angle;});
         
     }
     
