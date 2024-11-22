@@ -111,13 +111,10 @@ function setupThreeJs() {
 	document.addEventListener('keydown', onKeyPress);
 	
 	onResize();
-	initSky();
 	
 	let gui = new dat.GUI();
 	cameraOptionsController = setupCameraOptions(gui);
 	sceneManager.setupUI(gui);
-
-	scene.fog = new THREE.Fog( 0x7c503f, 35, 80);
 	
 	lastUpdateTime = Date.now();
 }
@@ -178,45 +175,6 @@ function configureControls()
 		orbitControls.target0.copy(sceneManager.flyingChairs.position);
 		orbitControls.reset();
 	}
-}
-
-const effectController = {
-	turbidity: 10,
-	rayleigh: 2,
-	mieCoefficient: 0,
-	mieDirectionalG: 0.8,
-	elevation: 50,
-	azimuth: 250,
-	exposure: 0.1
-};
-
-function initSky() {
-	
-	// Add Sky
-	sky = new Sky();
-	sky.scale.setScalar( 450 );
-	scene.add( sky );
-	
-	sun = new THREE.Vector3();
-	
-	guiChanged();
-}
-
-function guiChanged() {
-	
-	const uniforms = sky.material.uniforms;
-	uniforms[ 'turbidity' ].value = effectController.turbidity;
-	uniforms[ 'rayleigh' ].value = effectController.rayleigh;
-	uniforms[ 'mieCoefficient' ].value = effectController.mieCoefficient;
-	uniforms[ 'mieDirectionalG' ].value = effectController.mieDirectionalG;
-	
-	const phi = THREE.MathUtils.degToRad( 90 - effectController.elevation );
-	const theta = THREE.MathUtils.degToRad( effectController.azimuth );
-	
-	sun.setFromSphericalCoords( 1, phi, theta );
-	
-	uniforms[ 'sunPosition' ].value.copy( sun );
-	
 }
 
 function onResize() {

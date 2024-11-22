@@ -200,7 +200,7 @@ export class FlyingChairs extends THREE.Object3D {
         const R = this.properties.topWidth - 0.1;
         const L = this.properties.chainLen;
         
-        const velang = velangi * 80;
+        const velang = velangi * 80; // Adecuo la velocidad angular para hacer mas visible el angulo
         
         while (iter < maxIter) {
             // Calculamos f(theta) = tan(theta) - (velang^2 * (R + L * sin(theta)) / g)
@@ -227,17 +227,19 @@ export class FlyingChairs extends THREE.Object3D {
     
     animate()
     {
+        const accelerationCheck = 200; // ms de espera para aplicar las modificaciones de velocidad
+        
         if (this.lastUpdateTime == 0)
             this.lastUpdateTime = Date.now();
 
         // TimeElapse since last animate call
-        const Delta = Date.now() - this.lastUpdateTime;
+        const delta = Date.now() - this.lastUpdateTime;
         
-        if (Delta > 200)
+        if (delta > accelerationCheck)
         {
             if (this.inStoppageTime)
             {
-                this.stoppageTime += Delta;
+                this.stoppageTime += delta;
                 
                 if (this.stoppageTime >= this.properties.stopTime)
                 {
@@ -255,7 +257,7 @@ export class FlyingChairs extends THREE.Object3D {
                 
             } else
             {
-                this.runningTime += Delta;
+                this.runningTime += delta;
                 if (this.runningTime >= this.properties.runTime)
                 {
                     this.inStoppageTime = true;
