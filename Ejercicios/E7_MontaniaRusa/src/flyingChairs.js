@@ -36,7 +36,6 @@ export class FlyingChairs extends THREE.Object3D {
             topColor: 0xf58b00,
             chainColor: 0x151515,
             
-            
             stopTime:  7500, // ms
             runTime: 20000, // ms
             acceleration: 0.0001,
