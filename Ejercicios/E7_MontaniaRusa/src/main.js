@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
-import { Sky } from 'three/addons/objects/Sky.js';
 
 import { SceneManager } from './sceneManager.js';
 
@@ -13,7 +12,6 @@ let fpvControls, orbitControls;
 let lastUpdateTime;
 let orbitCamera, fpvCamera;
 let trainCameraFront, trainCameraBack, trainCameraSide, flyingChairCamera;
-let sun, sky;
 
 let cameras;
 // Camera por defecto

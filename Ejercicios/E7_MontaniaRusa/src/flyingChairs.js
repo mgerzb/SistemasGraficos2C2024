@@ -37,9 +37,9 @@ export class FlyingChairs extends THREE.Object3D {
             chainColor: 0x151515,
             
             
-            stopTime:  5000, // Seconds
-            runTime: 20000, // Seconds
-            acceleration: 0.001,
+            stopTime:  7500, // ms
+            runTime: 20000, // ms
+            acceleration: 0.0001,
             maxspeed: 0.02
         }
         
@@ -227,7 +227,7 @@ export class FlyingChairs extends THREE.Object3D {
     
     animate()
     {
-        const accelerationCheck = 200; // ms de espera para aplicar las modificaciones de velocidad
+        const accelerationCheck = 20; // ms de espera para aplicar las modificaciones de velocidad
         
         if (this.lastUpdateTime == 0)
             this.lastUpdateTime = Date.now();

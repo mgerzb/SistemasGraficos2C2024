@@ -89,7 +89,7 @@ export class SceneManager {
 		};
 		// Add Sky
 		this.sky = new Sky();
-		this.sky.scale.setScalar( 450 );
+		this.sky.scale.setScalar( 4500 );
 		this.scene.add( this.sky );
 		
 		this.sun = new THREE.Vector3();
