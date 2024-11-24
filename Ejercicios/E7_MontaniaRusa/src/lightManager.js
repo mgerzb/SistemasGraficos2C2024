@@ -9,6 +9,7 @@ export class LightManager {
         
         this.properties = { 
             sunLightHelper: false,
+            shadowCamHelper: false,
             
             shadowMapSize: {
                 left: -12, 
@@ -43,8 +44,6 @@ export class LightManager {
         
         scene.fog = new THREE.Fog( 0x7c503f, 20, 80);
         
-        const helper = new THREE.CameraHelper( this.sunLight.shadow.camera );
-        scene.add(helper);
         this.initSky();
     }
     
@@ -61,6 +60,22 @@ export class LightManager {
             let helper = this.scene.getObjectByName(HelperName);
             this.scene.remove(helper);
         }
+    }
+    
+    showShadowHelper(show)
+    {
+        const HelperName = "ShadowHelper";
+        if (show)
+        {
+            const helper = new THREE.CameraHelper( this.sunLight.shadow.camera );
+            helper.name = HelperName;
+            this.scene.add(helper);
+        } else
+        {
+            let helper = this.scene.getObjectByName(HelperName);
+            this.scene.remove(helper);
+        }
+
     }
     
     // Crea la luz para una lampara pasada como argumento

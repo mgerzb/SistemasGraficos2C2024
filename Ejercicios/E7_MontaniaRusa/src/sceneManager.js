@@ -122,6 +122,10 @@ export class SceneManager {
 			.name('Sun')
 			.onChange((value) => {this.sceneLights.showSunHelper(value);});
 			
+		f2.add(this.sceneLights.properties, 'shadowCamHelper')
+			.name('Shadows')
+			.onChange((value) => {this.sceneLights.showShadowHelper(value);});
+			
 		f2.add(this.sceneLights.effectController, 'elevation', -180, 180, 0.1).name('SunElevation').onChange((value) => {this.sceneLights.skyChanged();});
 	}
 	
