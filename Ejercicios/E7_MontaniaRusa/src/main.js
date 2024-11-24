@@ -6,6 +6,7 @@ import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { SceneManager } from './sceneManager.js';
 
 import * as dat from 'dat.gui';
+import Stats from 'stats.js'
 
 let scene, renderer, trainBackRenderer, trainFrontRenderer, trainBackContainer, trainFronContainer, container, sceneManager;
 let fpvControls, orbitControls;
@@ -50,6 +51,9 @@ const flyingChairIdx = 7;
 let centeredPosition = new THREE.Vector3(0,0,0);
 let rollerCoasterPosition = new THREE.Vector3(-3, 0, 5);
 
+// FPS counter
+const stats = new Stats()
+
 // Fija el movimiento de la camara FP al suelo
 class FixedFPVControls extends FirstPersonControls
 {
@@ -69,6 +73,7 @@ function setupThreeJs() {
 	container = document.getElementById('container3D');
 
 	renderer = new THREE.WebGLRenderer();
+	renderer.shadowMap.enabled = true;
 	trainBackRenderer = new THREE.WebGLRenderer();
 	trainFrontRenderer = new THREE.WebGLRenderer();
 	scene = new THREE.Scene();
@@ -115,6 +120,9 @@ function setupThreeJs() {
 	sceneManager.setupUI(gui);
 	
 	lastUpdateTime = Date.now();
+	
+	stats.showPanel(0) 
+	document.body.appendChild(stats.dom)
 }
 
 function setupCameraOptions(gui)
@@ -187,7 +195,7 @@ function onResize() {
 }
 
 function animate() {
-	requestAnimationFrame(animate);
+	stats.begin();
 	// TimeElapse since last animate call
 	const Delta = Date.now() - lastUpdateTime;
 
@@ -196,6 +204,8 @@ function animate() {
 	
 	sceneManager.animate();
 	renderer.render(scene, cameras[options.currentCamera]);
+	stats.end();
+	requestAnimationFrame(animate);
 }
 
 setupThreeJs();

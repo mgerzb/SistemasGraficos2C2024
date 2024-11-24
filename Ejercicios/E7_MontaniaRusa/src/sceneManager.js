@@ -38,6 +38,7 @@ export class SceneManager {
 		const ground = new THREE.Mesh( groundGeometry, groundMaterial );
 
 		ground.rotation.x = -Math.PI/2;
+		ground.receiveShadow = true;
 		
 		scene.add(ground);
 		
@@ -121,7 +122,7 @@ export class SceneManager {
 			.name('Sun')
 			.onChange((value) => {this.sceneLights.showSunHelper(value);});
 			
-		f2.add(this.sceneLights.effectController, 'elevation', -180, 180).name('SunElevation').onChange((value) => {this.sceneLights.skyChanged();});
+		f2.add(this.sceneLights.effectController, 'elevation', -180, 180, 0.1).name('SunElevation').onChange((value) => {this.sceneLights.skyChanged();});
 	}
 	
 	setupRLHelpers(f1)

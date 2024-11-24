@@ -234,6 +234,8 @@ export class RollerCoaster extends THREE.Object3D {
             tangents: [],
             binormals: []
         };
+        
+        this.traverse((obj) => {obj.castShadow = true;});
     }
     
     addTrain(train)

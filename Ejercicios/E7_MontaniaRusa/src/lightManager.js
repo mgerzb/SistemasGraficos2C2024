@@ -1,20 +1,41 @@
 import * as THREE from 'three';
 import { Sky } from 'three/addons/objects/Sky.js';
 
+const SunIntensity = 1.1;
+
 export class LightManager {
     
     constructor(scene) {
         
         this.properties = { 
-            sunLightHelper: false
+            sunLightHelper: false,
+            
+            shadowMapSize: {
+                left: -12, 
+                right: 12, 
+                top: -10, 
+                bottom: 10}
         };
         
         this.scene = scene;
         
-        this.sunLight = new THREE.DirectionalLight(0xffffff, 1.1);
+        this.sunLight = new THREE.DirectionalLight(0xffffff, SunIntensity);
+        this.sunLight.castShadow = true;
         
-        this.sunLight.position.set(2, 5, 0);
+        this.sunLight.position.set(2, 10, 0);
         this.sunLight.lookAt(0,0,0);
+        
+        //Set up shadow properties for the light
+        this.sunLight.shadow.mapSize.width = 1024; // default
+        this.sunLight.shadow.mapSize.height = 1024; // default
+        this.sunLight.shadow.camera.near = 0.5; // default
+        this.sunLight.shadow.camera.far = 80; // default
+        
+        this.sunLight.shadow.camera.left = this.properties.shadowMapSize.left;
+        this.sunLight.shadow.camera.right = this.properties.shadowMapSize.right;
+        this.sunLight.shadow.camera.top = this.properties.shadowMapSize.top;
+        this.sunLight.shadow.camera.bottom = this.properties.shadowMapSize.bottom;
+        
         scene.add(this.sunLight);
         
         this.ambientLight = new THREE.AmbientLight(0x666666);
@@ -22,6 +43,8 @@ export class LightManager {
         
         scene.fog = new THREE.Fog( 0x7c503f, 20, 80);
         
+        const helper = new THREE.CameraHelper( this.sunLight.shadow.camera );
+        scene.add(helper);
         this.initSky();
     }
     
@@ -80,6 +103,7 @@ export class LightManager {
         const theta = THREE.MathUtils.degToRad( effectController.azimuth );
         
         this.sun.setFromSphericalCoords( 1, phi, theta );
+        this.sunLight.position.setFromSphericalCoords( 20, phi, theta);
         
         uniforms[ 'sunPosition' ].value.copy( this.sun );
         
@@ -91,13 +115,39 @@ export class LightManager {
         let rayleighCoefficient = effectController.rayleigh - ( 1.0 * ( 1.0 - vSunfade ) );
         
         const color = new THREE.Color();
-        if (effectController.elevation < 0)
+        if (effectController.elevation < -2)
         {
             color.setHex(0x44393f); // "Black"
+            this.sunLight.intensity = 0;
         }
         else {
-            const factor = Math.sin(phi)**253;//Math.abs((90 - effectController.elevation))/90;
+            const factor = Math.abs(Math.sin(phi)**90);//Math.abs((90 - effectController.elevation))/90;
             color.lerpColors(new THREE.Color(0xffffff), new THREE.Color(0x8e805c), factor) ;
+            
+            if (effectController.elevation < 5)
+            {
+                this.sunLight.intensity = (effectController.elevation + 3) / 7;
+            }
+        }
+        
+        if (effectController.elevation > 90)
+        {
+            if (this.sunLight.shadow.camera.left != this.properties.shadowMapSize.right)
+            {
+                this.sunLight.shadow.camera.left = this.properties.shadowMapSize.right;
+                this.sunLight.shadow.camera.right = this.properties.shadowMapSize.left;
+                
+                this.sunLight.shadow.camera.updateProjectionMatrix();
+            }
+        } else
+        {
+            if (this.sunLight.shadow.camera.left != this.properties.shadowMapSize.left)
+            {
+                this.sunLight.shadow.camera.left = this.properties.shadowMapSize.left;
+                this.sunLight.shadow.camera.right = this.properties.shadowMapSize.right;
+                
+                this.sunLight.shadow.camera.updateProjectionMatrix();
+            }
         }
         
         this.scene.fog.color = color;

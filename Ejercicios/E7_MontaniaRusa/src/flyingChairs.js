@@ -83,6 +83,8 @@ export class FlyingChairs extends THREE.Object3D {
         this.currentSpeed = 0;
         this.runningTime = 0;
         
+        this.traverse((obj) => {obj.castShadow = true;});
+        
     }
     
     createBase()
