@@ -15,7 +15,16 @@ export class LightManager {
                 left: -12, 
                 right: 12, 
                 top: -10, 
-                bottom: 10}
+                bottom: 10},
+                
+            shadowMapResolution:
+            {
+                w: 1024,
+                h: 1024
+            },
+            
+            shadowNear: 0.5,
+            shadowFar: 80
         };
         
         this.scene = scene;
@@ -27,15 +36,18 @@ export class LightManager {
         this.sunLight.lookAt(0,0,0);
         
         //Set up shadow properties for the light
-        this.sunLight.shadow.mapSize.width = 1024; // default
-        this.sunLight.shadow.mapSize.height = 1024; // default
-        this.sunLight.shadow.camera.near = 0.5; // default
-        this.sunLight.shadow.camera.far = 80; // default
+        this.sunLight.shadow.mapSize.width = this.properties.shadowMapResolution.w; // default
+        this.sunLight.shadow.mapSize.height = this.properties.shadowMapResolution.h; // default
+        this.sunLight.shadow.camera.near = this.properties.shadowNear; // default
+        this.sunLight.shadow.camera.far = this.properties.shadowFar; // default
         
         this.sunLight.shadow.camera.left = this.properties.shadowMapSize.left;
         this.sunLight.shadow.camera.right = this.properties.shadowMapSize.right;
         this.sunLight.shadow.camera.top = this.properties.shadowMapSize.top;
         this.sunLight.shadow.camera.bottom = this.properties.shadowMapSize.bottom;
+        
+        this.nightLight = new THREE.HemisphereLight(0x8888dd, 0x080866, 0.1);
+        scene.add(this.nightLight);
         
         scene.add(this.sunLight);
         
@@ -96,7 +108,7 @@ export class LightManager {
             azimuth: 250,
             exposure: 0.28
         };
-        // Add Sky
+
         this.sky = new Sky();
         this.sky.scale.setScalar( 45000 );
         this.scene.add( this.sky );
@@ -124,44 +136,28 @@ export class LightManager {
         
         const clamp = (val, min, max) => Math.min(Math.max(val, min), max)
         
-        let vSunfade = 1.0 - clamp( 1.0 - Math.exp( ( this.sun.y / 450000.0 ) ), 0.0, 1.0 );
-        let vBetaR = new THREE.Vector3(1.8399918514433978e14, 2.7798023919660528e14, 4.0790479543861094e14 );
-        let vBetaM =  effectController.mieCoefficient * 0.434 * (( 0.2 * effectController.turbidity ) * 10e-18) * new THREE.Vector3( 1.8399918514433978E14, 2.7798023919660528E14, 4.0790479543861094E14 );
-        let rayleighCoefficient = effectController.rayleigh - ( 1.0 * ( 1.0 - vSunfade ) );
-        
+        // Calculo de color de neblina para mimetizarlo con el color del horizonte
         const color = new THREE.Color();
         if (effectController.elevation < -2)
         {
             color.setHex(0x44393f); // "Black"
             this.sunLight.intensity = 0;
+            this.ambientLight.intensity = 0.1;
+            this.nightLight.intensity = 0.8;
         }
         else {
             const factor = Math.abs(Math.sin(phi)**90);//Math.abs((90 - effectController.elevation))/90;
             color.lerpColors(new THREE.Color(0xffffff), new THREE.Color(0x8e805c), factor) ;
             
-            if (effectController.elevation < 5)
+            
+            if (effectController.elevation < 5 || effectController.elevation > 175)
             {
-                this.sunLight.intensity = (effectController.elevation + 3) / 7;
-            }
-        }
-        
-        if (effectController.elevation > 90)
-        {
-            if (this.sunLight.shadow.camera.left != this.properties.shadowMapSize.right)
-            {
-                this.sunLight.shadow.camera.left = this.properties.shadowMapSize.right;
-                this.sunLight.shadow.camera.right = this.properties.shadowMapSize.left;
-                
-                this.sunLight.shadow.camera.updateProjectionMatrix();
-            }
-        } else
-        {
-            if (this.sunLight.shadow.camera.left != this.properties.shadowMapSize.left)
-            {
-                this.sunLight.shadow.camera.left = this.properties.shadowMapSize.left;
-                this.sunLight.shadow.camera.right = this.properties.shadowMapSize.right;
-                
-                this.sunLight.shadow.camera.updateProjectionMatrix();
+                let elevationValue = effectController.elevation;
+                if (elevationValue > 175)
+                    elevationValue = 180 - elevationValue;
+
+                this.sunLight.intensity = (elevationValue + 3) / 7;
+                this.nightLight.intensity = 1 - (elevationValue + 3) / 7;
             }
         }
         

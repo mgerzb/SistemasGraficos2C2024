@@ -619,7 +619,7 @@ export class RollerCoaster extends THREE.Object3D {
         }
         
         const geometry = new ParametricGeometry( ParamFunc, 20, POINTS -1);
-        //geometry.computeVertexNormals();
+        geometry.computeVertexNormals();
         const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: false, wireframe: false});
         const mesh = new THREE.Mesh( geometry, material );
         
@@ -740,6 +740,7 @@ export class RollerCoaster extends THREE.Object3D {
                     }
                     
                     const columnGeometry = new ParametricGeometry( ParamFunc, 32, 3);
+                    columnGeometry.computeVertexNormals();
                     const columnMaterial = new THREE.MeshPhongMaterial({ color: 0xD3D3D3, flatShading: false, wireframe: false});
                     
                     const column = new THREE.Mesh( columnGeometry, columnMaterial );
