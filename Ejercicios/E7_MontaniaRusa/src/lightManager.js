@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Sky } from 'three/addons/objects/Sky.js';
 
 const SunIntensity = 1.1;
+const AmbientIntensity = 1;
 
 export class LightManager {
     
@@ -158,6 +159,8 @@ export class LightManager {
             color.lerpColors(new THREE.Color(0xffffff), new THREE.Color(0x8e805c), factor) ;
             
             this.lampLights.map((lamp) => lamp.intensity = 0);
+            this.ambientLight.intensity = AmbientIntensity;
+            this.sunLight.intensity = SunIntensity;
             
             if (effectController.elevation < 5 || effectController.elevation > 175)
             {
