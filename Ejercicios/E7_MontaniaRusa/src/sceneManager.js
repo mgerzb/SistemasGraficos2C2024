@@ -9,11 +9,13 @@ import { RollerCoaster } from './rollerCoaster.js';
 import { Train } from './train.js';
 import { FlyingChairs } from './flyingChairs.js';
 import { LightManager} from './lightManager.js';
+import { StreetLamp } from './streetLamp.js';
 
 export class SceneManager {
 	
 	constructor(scene) {
 		
+		this.scene = scene;
 		this.sceneLights = new LightManager(scene);
 
 		// Helpers
@@ -32,6 +34,8 @@ export class SceneManager {
 		this.flyingChairs.position.z = -3.3;
 		this.flyingChairs.position.x = -3;
 		scene.add(this.flyingChairs);
+		
+		this.addStreetLamps();
 		
 		const groundGeometry = new THREE.PlaneGeometry( 1000, 1000 );
 		const groundMaterial = new THREE.MeshPhongMaterial( {color: 0x00ff00} );
@@ -54,8 +58,6 @@ export class SceneManager {
 			
 			cameras: "t1"
 		}
-		
-		this.scene = scene;
 
 		this.rLHelpersUpdate();
 		this.worldHelpersUpdate();
@@ -166,6 +168,37 @@ export class SceneManager {
 	addFlyingChairCamera(Camera)
 	{
 		this.flyingChairs.chairs[0].add(Camera);
+	}
+	
+	addStreetLamps()
+	{
+		const lampsPositions = new THREE.CatmullRomCurve3( [
+			new THREE.Vector3( -3, 0, -5 ),
+														   new THREE.Vector3( -0.5, 0, -3 ),
+														   new THREE.Vector3( -0.75, 0, 0 ),
+														   new THREE.Vector3( 2, 0, 2.5 ),
+														   new THREE.Vector3( 2.5, 0, 5 ),
+														   new THREE.Vector3( 2, 0, 9 ),
+														   new THREE.Vector3( -0.5, 0, 11.5 ),
+														   new THREE.Vector3( -6, 0, 8 ),
+														   new THREE.Vector3( -6, 0, 3 ),
+														   new THREE.Vector3( -6.5, 0, 0 ),
+														   new THREE.Vector3( -6, 0, -2 ),
+														   new THREE.Vector3( -4, 0, -4.5 )
+		] );
+		
+		const lampCount = 15;
+		const lampHeight = 0.3;
+		for (let i=0; i < lampCount; i++)
+		{
+			let position = lampsPositions.getPointAt(i/lampCount);
+			let lamp = new StreetLamp(lampHeight);
+			
+			lamp.position.copy(position);
+			
+			this.scene.add(lamp);
+			this.sceneLights.addLamp(lamp);
+		}
 	}
 
 	animate() {

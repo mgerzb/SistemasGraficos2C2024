@@ -56,6 +56,8 @@ export class LightManager {
         
         scene.fog = new THREE.Fog( 0x7c503f, 20, 80);
         
+        this.lampLights = [];
+        
         this.initSky();
     }
     
@@ -93,7 +95,12 @@ export class LightManager {
     // Crea la luz para una lampara pasada como argumento
     addLamp(lamp)
     {
-        // TODO
+        const intensity = this.effectController.elevation < 5 || this.effectController.elevation > 175 ? 0.8:0;
+        let light = new THREE.PointLight(lamp.lampColor, intensity, 10, 1);
+        this.lampLights.push(light);
+        light.position.set(0, lamp.height, 0);
+        
+        lamp.add(light);
     }
     
     initSky() {
@@ -144,14 +151,18 @@ export class LightManager {
             this.sunLight.intensity = 0;
             this.ambientLight.intensity = 0.1;
             this.nightLight.intensity = 0.8;
+            this.lampLights.map((lamp) => lamp.intensity = 0.8);
         }
         else {
             const factor = Math.abs(Math.sin(phi)**90);//Math.abs((90 - effectController.elevation))/90;
             color.lerpColors(new THREE.Color(0xffffff), new THREE.Color(0x8e805c), factor) ;
             
+            this.lampLights.map((lamp) => lamp.intensity = 0);
             
             if (effectController.elevation < 5 || effectController.elevation > 175)
             {
+                this.lampLights.map((lamp) => lamp.intensity = 0.8);
+                
                 let elevationValue = effectController.elevation;
                 if (elevationValue > 175)
                     elevationValue = 180 - elevationValue;
