@@ -150,8 +150,8 @@ export class LightManager {
         {
             color.setHex(0x44393f); // "Black"
             this.sunLight.intensity = 0;
-            this.ambientLight.intensity = 0.1;
-            this.nightLight.intensity = 0.8;
+            this.ambientLight.intensity = 0;
+            this.nightLight.intensity = 3/14;
             this.lampLights.map((lamp) => lamp.intensity = 0.8);
         }
         else {
@@ -171,7 +171,7 @@ export class LightManager {
                     elevationValue = 180 - elevationValue;
 
                 this.sunLight.intensity = (elevationValue + 3) / 7;
-                this.nightLight.intensity = 1 - (elevationValue + 3) / 7;
+                this.nightLight.intensity = 0.5 - (elevationValue + 3) / 14;
             }
         }
         
