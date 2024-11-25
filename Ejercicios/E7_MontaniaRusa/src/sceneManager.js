@@ -10,6 +10,13 @@ import { Train } from './train.js';
 import { FlyingChairs } from './flyingChairs.js';
 import { LightManager} from './lightManager.js';
 import { StreetLamp } from './streetLamp.js';
+import { vertexShader, fragmentShader } from './shaders/shadersGround.js';
+
+const textures = {
+	tierra: { url: 'tierra.jpg', object: null },
+	roca: { url: 'ripio.jpg', object: null },
+	pasto: { url: 'pasto.jpg', object: null },
+};
 
 export class SceneManager {
 	
@@ -39,12 +46,12 @@ export class SceneManager {
 		
 		const groundGeometry = new THREE.PlaneGeometry( 1000, 1000 );
 		const groundMaterial = new THREE.MeshPhongMaterial( {color: 0x00ff00} );
-		const ground = new THREE.Mesh( groundGeometry, groundMaterial );
+		this.ground = new THREE.Mesh( groundGeometry, groundMaterial );
 
-		ground.rotation.x = -Math.PI/2;
-		ground.receiveShadow = true;
+		this.ground.rotation.x = -Math.PI/2;
+		this.ground.receiveShadow = true;
 		
-		scene.add(ground);
+		scene.add(this.ground);
 		
 		this.properties =
 		{
@@ -62,6 +69,68 @@ export class SceneManager {
 		this.rLHelpersUpdate();
 		this.worldHelpersUpdate();
 		
+		let uniforms = {
+			
+			tierraSampler: { type: 't', value: textures.tierra.object },
+			rocaSampler: { type: 't', value: textures.roca.object },
+			pastoSampler: { type: 't', value: textures.pasto.object },
+			scale1: { type: 'f', value: 10 },
+			
+			mask1low: { type: 'f', value: -0.1 },
+			mask1high: { type: 'f', value: 0.1 },
+			
+			mask2low: { type: 'f', value: -0.3 },
+			mask2high: { type: 'f', value: 0.2 },
+		};
+
+		
+		this.loadTextures(() => {
+			let groundMaterial = new THREE.RawShaderMaterial({
+				uniforms: {
+					tierraSampler: { type: 't', value: textures.tierra.object },
+					rocaSampler: { type: 't', value: textures.roca.object },
+					pastoSampler: { type: 't', value: textures.pasto.object },
+					scale1: { type: 'f', value: 10.0 },
+					
+					mask1low: { type: 'f', value: -0.1 },
+					mask1high: { type: 'f', value: 0.1 },
+					
+					mask2low: { type: 'f', value: -0.3 },
+					mask2high: { type: 'f', value: 0.2 },
+				},
+				vertexShader: vertexShader,
+				fragmentShader: fragmentShader,
+			});
+			
+			this.ground.material = groundMaterial;
+			this.ground.receiveShadow = true;
+			this.ground.needsUpdate = true;
+		});
+	}
+	
+	loadTextures(callback) {
+		const loadingManager = new THREE.LoadingManager();
+		
+		loadingManager.onLoad = () => {
+			console.log('All textures loaded');
+			callback();
+		};
+		
+		for (const key in textures) {
+			const loader = new THREE.TextureLoader(loadingManager);
+			const texture = textures[key];
+			texture.object = loader.load('resources/' + texture.url, 
+										 this.onTextureLoaded.bind(this, key),
+										 null, (error) => {
+				console.error(error);
+			});
+		}
+	}
+	
+	onTextureLoaded(key, texture) {
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		textures[key].object = texture;
+		console.log(`Texture ${key} loaded`);
 	}
 	
 	rLHelpersUpdate()
