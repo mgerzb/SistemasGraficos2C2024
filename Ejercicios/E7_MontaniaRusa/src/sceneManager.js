@@ -10,7 +10,7 @@ import { Train } from './train.js';
 import { FlyingChairs } from './flyingChairs.js';
 import { LightManager} from './lightManager.js';
 import { StreetLamp } from './streetLamp.js';
-import { vertexShader, fragmentShader } from './shaders/shadersGround.js';
+import { vertexShader, fragmentShaderVars, fragmentShader } from './shaders/shadersGround.js';
 
 const textures = {
 	tierra: { url: 'tierra.jpg', object: null },
@@ -24,7 +24,7 @@ export class SceneManager {
 		
 		this.scene = scene;
 		this.sceneLights = new LightManager(scene);
-
+		
 		// Helpers
 		this.grid = new THREE.GridHelper(10, 10);
 		this.axes = new THREE.AxesHelper(3);
@@ -47,7 +47,7 @@ export class SceneManager {
 		const groundGeometry = new THREE.PlaneGeometry( 1000, 1000 );
 		const groundMaterial = new THREE.MeshPhongMaterial( {color: 0x00ff00} );
 		this.ground = new THREE.Mesh( groundGeometry, groundMaterial );
-
+		
 		this.ground.rotation.x = -Math.PI/2;
 		this.ground.receiveShadow = true;
 		
@@ -65,7 +65,7 @@ export class SceneManager {
 			
 			cameras: "t1"
 		}
-
+		
 		this.rLHelpersUpdate();
 		this.worldHelpersUpdate();
 		
@@ -82,33 +82,41 @@ export class SceneManager {
 			mask2low: { type: 'f', value: -0.3 },
 			mask2high: { type: 'f', value: 0.2 },
 		};
-
+		
 		
 		this.loadTextures(() => {
-			let groundMaterial = new THREE.RawShaderMaterial({
-				uniforms: {
-					tierraSampler: { type: 't', value: textures.tierra.object },
-					rocaSampler: { type: 't', value: textures.roca.object },
-					pastoSampler: { type: 't', value: textures.pasto.object },
-					scale1: { type: 'f', value: 10.0 },
-					
-					mask1low: { type: 'f', value: -0.1 },
-					mask1high: { type: 'f', value: 0.1 },
-					
-					mask2low: { type: 'f', value: -0.3 },
-					mask2high: { type: 'f', value: 0.2 },
-				},
-				vertexShader: vertexShader,
-				fragmentShader: fragmentShader,
-			});
-			
-			this.ground.material = groundMaterial;
+			this.ground.material = new THREE.MeshPhongMaterial( {color: 0x00ff00} );
+			this.ground.material.onBeforeCompile = function ( shader )
+			{
+				shader.uniforms.tierraSampler =  { type: 't', value: textures.tierra.object };
+				shader.uniforms.rocaSampler = { type: 't', value: textures.roca.object };
+				shader.uniforms.pastoSampler = { type: 't', value: textures.pasto.object };
+				shader.uniforms.scale1 = { type: 'f', value: 200.0 };
+				shader.uniforms.mask1low = { type: 'f', value: 0.78 };
+				shader.uniforms.mask1high = { type: 'f', value: 0.1 };
+				shader.uniforms.mask2low = { type: 'f', value: 0.8};
+				shader.uniforms.mask2high = { type: 'f', value: 1 };
+				
+				shader.fragmentShader = fragmentShaderVars  + shader.fragmentShader;
+				shader.fragmentShader = shader.fragmentShader.replace(
+					'#include <map_fragment>',
+					[fragmentShader].join( '\n' )
+				);
+				
+				shader.vertexShader = shader.vertexShader.replace( '#define PHONG', `#define PHONG\n// Varying \n
+				varying vec2 vUv;	// Coordenadas de textura que se pasan al fragment shader\n`);
+				shader.vertexShader = shader.vertexShader.replace('#include <fog_vertex>', `#include <fog_vertex>\n// Se pasan las coordenadas de textura al fragment \n
+				vUv = uv;`);
+			};
+		
 			this.ground.receiveShadow = true;
 			this.ground.needsUpdate = true;
-		});
+
+		}		);
 	}
 	
 	loadTextures(callback) {
+		
 		const loadingManager = new THREE.LoadingManager();
 		
 		loadingManager.onLoad = () => {
