@@ -10,7 +10,8 @@ import { Train } from './train.js';
 import { FlyingChairs } from './flyingChairs.js';
 import { LightManager} from './lightManager.js';
 import { StreetLamp } from './streetLamp.js';
-import { vertexShader, fragmentShaderVars, fragmentShader } from './shaders/shadersGround.js';
+
+import { vertexShader, fragmentShaderVars, fragmentShader } from '@shaders/shadersGround.js';
 
 const textures = {
 	tierra: { url: 'tierra.jpg', object: null },
@@ -130,7 +131,7 @@ export class SceneManager {
 		for (const key in textures) {
 			const loader = new THREE.TextureLoader(loadingManager);
 			const texture = textures[key];
-			texture.object = loader.load('resources/' + texture.url, 
+			texture.object = loader.load(import.meta.env.VITE_TEXTURE_PATH + '/' + texture.url, 
 										 this.onTextureLoaded.bind(this, key),
 										 null, (error) => {
 				console.error(error);
