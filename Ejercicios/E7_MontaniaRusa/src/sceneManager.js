@@ -16,6 +16,7 @@ const textures = {
 	tierra: { url: 'tierra.jpg', object: null },
 	roca: { url: 'ripio.jpg', object: null },
 	pasto: { url: 'pasto.jpg', object: null },
+	sendero: { url: 'trail.jpg', object: null }
 };
 
 export class SceneManager {
@@ -74,6 +75,7 @@ export class SceneManager {
 			tierraSampler: { type: 't', value: textures.tierra.object },
 			rocaSampler: { type: 't', value: textures.roca.object },
 			pastoSampler: { type: 't', value: textures.pasto.object },
+			trailSampler: { type: 't', value: textures.sendero.object },
 			scale1: { type: 'f', value: 10 },
 			
 			mask1low: { type: 'f', value: -0.1 },
@@ -91,7 +93,8 @@ export class SceneManager {
 				shader.uniforms.tierraSampler =  { type: 't', value: textures.tierra.object };
 				shader.uniforms.rocaSampler = { type: 't', value: textures.roca.object };
 				shader.uniforms.pastoSampler = { type: 't', value: textures.pasto.object };
-				shader.uniforms.scale1 = { type: 'f', value: 200.0 };
+				shader.uniforms.senderoSampler = { type: 't', value: textures.sendero.object };
+				shader.uniforms.scale1 = { type: 'f', value: 1000.0 };
 				shader.uniforms.mask1low = { type: 'f', value: 0.78 };
 				shader.uniforms.mask1high = { type: 'f', value: 0.1 };
 				shader.uniforms.mask2low = { type: 'f', value: 0.8};
@@ -136,7 +139,8 @@ export class SceneManager {
 	}
 	
 	onTextureLoaded(key, texture) {
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		if (key != "sendero") // Para el sendero dejamos se repita el ultimo pixel
+			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 		textures[key].object = texture;
 		console.log(`Texture ${key} loaded`);
 	}

@@ -45,6 +45,7 @@ export const fragmentShaderVars = `
     uniform sampler2D tierraSampler;
     uniform sampler2D rocaSampler;
     uniform sampler2D pastoSampler;
+    uniform sampler2D senderoSampler;
 
     // Perlin Noise						
                 
@@ -140,6 +141,9 @@ export const fragmentShaderVars = `
 
 export const fragmentShader = `
         vec2 uv2=vUv*scale1;
+        vec2 uv3=(vUv*930.0) - 450.0;
+        
+        uv3.y = uv3.y - 1.0;
 
         // muestreo el pasto a diferentes escalas
 
@@ -149,7 +153,7 @@ export const fragmentShader = `
         
         // combino los 3 muestreos del pasto con la funcion de mezcla
 
-        //vec3 colorPasto=pasto3;
+        //vec3 colorPasto=pasto1;
         vec3 colorPasto=mix(mix(pasto1,pasto2,0.5),pasto3,0.3);
 
         // muestreo la tierra a diferentes escalas
@@ -163,6 +167,20 @@ export const fragmentShader = `
         vec3 roca1=texture2D(rocaSampler,uv2).xyz;
         vec3 roca2=texture2D(rocaSampler,uv2*2.38).xyz;
         vec3 colorRoca=mix(roca1,roca2,0.5);        
+        
+        // mascara de sendero
+        float senderoMask=texture2D(senderoSampler, uv3.yx/20.0).r;
+        
+        // Determinar pesos basados en el valor de la máscara
+        float weightA = smoothstep(0.0, 0.4, 1.0 - senderoMask); // Más peso para negros
+        float weightB = smoothstep(0.3, 0.7, senderoMask);       // Peso para valores grises
+        float weightC = smoothstep(0.6, 1.0, senderoMask);       // Más peso para blancos
+        
+        // Normalizar los pesos para evitar valores mayores a 1
+        float totalWeight = weightA + weightB + weightC;
+        weightA /= totalWeight;
+        weightB /= totalWeight;
+        weightC /= totalWeight;
         
         // genero una mascara 1 a partir de ruido perlin
 
@@ -189,6 +207,7 @@ export const fragmentShader = `
         vec3 color=mix(colorPasto,colorTierraRoca,mask2);			   
         
         diffuseColor = vec4(color,1.0);
+        diffuseColor = vec4(colorPasto * weightA + colorTierra * weightB + colorRoca * weightC, 1.0);
         //gl_FragColor = vec4(colorPasto,1.0);		
 
     `;
