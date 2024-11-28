@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
 import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGeometries.js";
+import { PMREMGenerator } from "three/src/extras/PMREMGenerator.js";
 
 import * as dat from 'dat.gui';
 import { CamerasId } from  './constants.js';
@@ -17,7 +18,16 @@ const textures = {
 	tierra: { url: 'tierra.jpg', object: null },
 	roca: { url: 'ripio.jpg', object: null },
 	pasto: { url: 'pasto.jpg', object: null },
-	sendero: { url: 'trail.jpg', object: null }
+	sendero: { url: 'trail.jpg', object: null },
+	rust: { url: 'column_base.jpg', object: null },
+	rust_norm: { url: 'column_normals.jpg', object: null },
+	rust_ao: { url: 'column_ao.jpg', object: null },
+	twist_tunnel: { url: 'tunnelA_base.png', object: null },
+	twist_tunnel_alpha: { url: 'tunnelA_alpha.png', object: null },
+	twist_tunnel_norm: { url: 'tunnelA_normals.png', object: null },
+	rail:  { url: 'rail_base.jpg', object: null },
+	rail_ao:  { url: 'rail_ao.jpg', object: null },
+	rail_norm:  { url: 'rail_normal.jpg', object: null },
 };
 
 export class SceneManager {
@@ -96,10 +106,9 @@ export class SceneManager {
 				shader.uniforms.pastoSampler = { type: 't', value: textures.pasto.object };
 				shader.uniforms.senderoSampler = { type: 't', value: textures.sendero.object };
 				shader.uniforms.scale1 = { type: 'f', value: 1000.0 };
-				shader.uniforms.mask1low = { type: 'f', value: 0.78 };
-				shader.uniforms.mask1high = { type: 'f', value: 0.1 };
-				shader.uniforms.mask2low = { type: 'f', value: 0.8};
-				shader.uniforms.mask2high = { type: 'f', value: 1 };
+				shader.uniforms.tailMaskScale = { type: 'f', value: 930.0 };
+				shader.uniforms.tailPosX = { type: 'f', value: 449.5 };
+				shader.uniforms.tailPosY = { type: 'f', value: 451.0 };
 				
 				shader.fragmentShader = fragmentShaderVars  + shader.fragmentShader;
 				shader.fragmentShader = shader.fragmentShader.replace(
@@ -115,8 +124,41 @@ export class SceneManager {
 		
 			this.ground.receiveShadow = true;
 			this.ground.needsUpdate = true;
+			
+			textures.rust.object.repeat = textures.rust_norm.object.repeat = textures.rust_ao.object.repeat = new THREE.Vector2(1,4);
+			
+			let columns = this.rollerCoaster.getAllColumns();
+			columns.map((column)=>{
+				column.material = new THREE.MeshPhongMaterial( {color: 0xffffff} ); // Si no redefino el material, algunas columnas no cargan su textura
+				column.material.map = textures.rust.object;
+				column.material.shininess= 80.0;
+				column.material.normalMap = textures.rust_norm.object;
+				column.material.aoMap = textures.rust_ao.object;
+			});
+			
+			textures.twist_tunnel_alpha.object.repeat = textures.twist_tunnel.object.repeat = textures.twist_tunnel_norm.object.repeat = new THREE.Vector2(4,4);
+			
+			this.rollerCoaster.twistedTunnel.material.color = 0x000000;
+			this.rollerCoaster.twistedTunnel.material.alphaTest = 0.3;
+			this.rollerCoaster.twistedTunnel.material.transparent = false;
+			this.rollerCoaster.twistedTunnel.material.alphaMap = textures.twist_tunnel_alpha.object;
+			this.rollerCoaster.twistedTunnel.material.map = textures.twist_tunnel.object;
+			this.rollerCoaster.twistedTunnel.material.normalMap = textures.twist_tunnel_norm.object;
+			
+			textures.rail.object.repeat = textures.rail_ao.object.repeat = textures.rail_norm.object.repeat = new THREE.Vector2(8,128);
+			
+			this.rollerCoaster.rcMesh.material = new THREE.MeshStandardMaterial( {color: 0xffffff} ); // 
+			this.rollerCoaster.rcMesh.material.roughness = 0.1;
+			this.rollerCoaster.rcMesh.material.metalness =  0.5;
+			
+			this.rollerCoaster.rcMesh.material.envMap = this.remGenerator.fromScene( this.sceneLights.sky ).texture
+			this.rollerCoaster.rcMesh.material.envMapIntensity = 0.1;
+			this.rollerCoaster.rcMesh.material.map = textures.rail.object;
+			this.rollerCoaster.rcMesh.material.aoMap = textures.rail_ao.object;
+			this.rollerCoaster.rcMesh.material.normalMap = textures.rail_norm.object;
+			// this.rollerCoaster.rcMesh.material.shininess = 80.0;
 
-		}		);
+		});
 	}
 	
 	loadTextures(callback) {

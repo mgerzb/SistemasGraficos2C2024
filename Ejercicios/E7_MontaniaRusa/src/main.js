@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
+import { PMREMGenerator } from "three/src/extras/PMREMGenerator.js";
 
 import { SceneManager } from './sceneManager.js';
 
@@ -98,6 +99,8 @@ function setupThreeJs() {
 	sceneManager = new SceneManager(scene);
 	sceneManager.addTrainCameras(trainCameraFront, trainCameraBack, trainCameraSide);
 	sceneManager.addFlyingChairCamera(flyingChairCamera);
+	
+	sceneManager.remGenerator = new PMREMGenerator(renderer);
 	
 	// Posiciones para la camara orbital de cada atracción
 	orbitControls = new OrbitControls(orbitCamera, renderer.domElement);

@@ -620,7 +620,7 @@ export class RollerCoaster extends THREE.Object3D {
         
         const geometry = new ParametricGeometry( ParamFunc, 20, POINTS -1);
         geometry.computeVertexNormals();
-        const material = new THREE.MeshPhongMaterial({ color: 0xff00ff, flatShading: false, wireframe: false});
+        const material = new THREE.MeshPhongMaterial({ color: 0xffffff, flatShading: false, wireframe: false});
         const mesh = new THREE.Mesh( geometry, material );
         
         return mesh;
@@ -744,6 +744,7 @@ export class RollerCoaster extends THREE.Object3D {
                     const columnMaterial = new THREE.MeshPhongMaterial({ color: 0xD3D3D3, flatShading: false, wireframe: false});
                     
                     const column = new THREE.Mesh( columnGeometry, columnMaterial );
+                    column.name = "Column";
         
                     column.position.set(columnPos.x, 0, columnPos.z);
             
@@ -758,6 +759,10 @@ export class RollerCoaster extends THREE.Object3D {
         
     }
     
+    getAllColumns()
+    {
+        return this.getObjectsByProperty("name", "Column");
+    }
     buildScaledTunnel()
 	{
         const circleRadius = 0.2;
