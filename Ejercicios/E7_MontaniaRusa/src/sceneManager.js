@@ -3,6 +3,8 @@ import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.j
 import { ParametricGeometries } from "three/examples/jsm/geometries/ParametricGeometries.js";
 import { PMREMGenerator } from "three/src/extras/PMREMGenerator.js";
 
+import { VertexNormalsHelper } from 'three/addons/helpers/VertexNormalsHelper.js';
+
 import * as dat from 'dat.gui';
 import { CamerasId } from  './constants.js';
 
@@ -21,6 +23,8 @@ const textures = {
 	sendero: { url: 'trail.jpg', object: null },
 	rust: { url: 'column_base.jpg', object: null },
 	rust_norm: { url: 'column_normals.jpg', object: null },
+	rust_rough: { url: 'column_rough.jpg', object: null },
+	rust_metal: { url: 'column_metal.jpg', object: null },
 	rust_ao: { url: 'column_ao.jpg', object: null },
 	twist_tunnel: { url: 'tunnelA_base.png', object: null },
 	twist_tunnel_alpha: { url: 'tunnelA_alpha.png', object: null },
@@ -28,6 +32,9 @@ const textures = {
 	rail:  { url: 'rail_base.jpg', object: null },
 	rail_ao:  { url: 'rail_ao.jpg', object: null },
 	rail_norm:  { url: 'rail_normal.jpg', object: null },
+	chtop: { url: 'chairsTop_base.png', object: null },
+	scaled_tunnel: { url: 'tunnelB_base.jpg', object: null },
+	scaled_tunnel_alpha: { url: 'tunnelB_alpha.jpg', object: null }
 };
 
 export class SceneManager {
@@ -121,19 +128,32 @@ export class SceneManager {
 				shader.vertexShader = shader.vertexShader.replace('#include <fog_vertex>', `#include <fog_vertex>\n// Se pasan las coordenadas de textura al fragment \n
 				vUv = uv;`);
 			};
+			
+			let reflection = this.remGenerator.fromScene( this.sceneLights.sky ).texture;
 		
 			this.ground.receiveShadow = true;
 			this.ground.needsUpdate = true;
 			
-			textures.rust.object.repeat = textures.rust_norm.object.repeat = textures.rust_ao.object.repeat = new THREE.Vector2(1,4);
+			textures.rust.object.repeat = textures.rust_norm.object.repeat = textures.rust_ao.object.repeat = new THREE.Vector2(2,4);
 			
 			let columns = this.rollerCoaster.getAllColumns();
 			columns.map((column)=>{
-				column.material = new THREE.MeshPhongMaterial( {color: 0xffffff} ); // Si no redefino el material, algunas columnas no cargan su textura
+				column.material = new THREE.MeshPhongMaterial( {color: 0xffffff} ); //  Si no redefino el material, algunas columnas no cargan su textura
 				column.material.map = textures.rust.object;
-				column.material.shininess= 80.0;
+				// this.rollerCoaster.rcMesh.material.roughness = 0.3;
+				// this.rollerCoaster.rcMesh.material.metalness =  1.0;
+				column.material.shininess= 30.0;
 				column.material.normalMap = textures.rust_norm.object;
+				// column.material.roughnessMap = textures.rust_rough.object;
+				//column.material.metalness = textures.rust_metal.object;
 				column.material.aoMap = textures.rust_ao.object;
+				//column.material.specular = 0xAA0000;
+				// column.material.envMap = reflection;
+				// column.material.envMapIntensity = 0;
+				// column.material.reflectivy = 0;
+				// const helper = new VertexNormalsHelper( column, 0.2, 0xff0000 );
+				// this.scene.add(helper);
+				
 			});
 			
 			textures.twist_tunnel_alpha.object.repeat = textures.twist_tunnel.object.repeat = textures.twist_tunnel_norm.object.repeat = new THREE.Vector2(4,4);
@@ -145,18 +165,39 @@ export class SceneManager {
 			this.rollerCoaster.twistedTunnel.material.map = textures.twist_tunnel.object;
 			this.rollerCoaster.twistedTunnel.material.normalMap = textures.twist_tunnel_norm.object;
 			
+			
+			// Rotamos la textura para que se alinee al con los u,v
+			textures.scaled_tunnel.object.rotation = Math.PI/2;
+			textures.scaled_tunnel.object.repeat = new THREE.Vector2(2.5,1);
+			textures.scaled_tunnel.object.offset.x = 0.25;
+			this.rollerCoaster.scaledTunnel.material.map = textures.scaled_tunnel.object;
+			this.rollerCoaster.scaledTunnel.material.needsUpdate = true;
+			
+			textures.scaled_tunnel_alpha.object.rotation = Math.PI/2;
+			textures.scaled_tunnel_alpha.object.flipY = false;
+			textures.scaled_tunnel_alpha.object.offset.y = 0.3;
+			this.rollerCoaster.scaledTunnel.material.alphaMap = textures.scaled_tunnel_alpha.object;
+			this.rollerCoaster.scaledTunnel.material.alphaTest = 0.3;
+			
 			textures.rail.object.repeat = textures.rail_ao.object.repeat = textures.rail_norm.object.repeat = new THREE.Vector2(8,128);
 			
-			this.rollerCoaster.rcMesh.material = new THREE.MeshStandardMaterial( {color: 0xffffff} ); // 
+			this.rollerCoaster.rcMesh.material = new THREE.MeshStandardMaterial( {color: 0xffffff} );
 			this.rollerCoaster.rcMesh.material.roughness = 0.1;
-			this.rollerCoaster.rcMesh.material.metalness =  0.5;
+			this.rollerCoaster.rcMesh.material.metalness = 1.0;
 			
-			this.rollerCoaster.rcMesh.material.envMap = this.remGenerator.fromScene( this.sceneLights.sky ).texture
+			this.rollerCoaster.rcMesh.material.envMap = reflection;
 			this.rollerCoaster.rcMesh.material.envMapIntensity = 0.1;
 			this.rollerCoaster.rcMesh.material.map = textures.rail.object;
 			this.rollerCoaster.rcMesh.material.aoMap = textures.rail_ao.object;
 			this.rollerCoaster.rcMesh.material.normalMap = textures.rail_norm.object;
 			// this.rollerCoaster.rcMesh.material.shininess = 80.0;
+			
+			// Rotamos la textura para que se alinee al con los u,v
+			textures.chtop.object.rotation = Math.PI/2;
+			textures.chtop.object.repeat = new THREE.Vector2(0.7,1);
+			
+			this.flyingChairs.top.material = new THREE.MeshPhongMaterial( {color: 0xffffff, wireframe: false} );
+			this.flyingChairs.top.material.map = textures.chtop.object;
 
 		});
 	}
@@ -312,7 +353,7 @@ export class SceneManager {
 		] );
 		
 		const lampCount = 15;
-		const lampHeight = 0.3;
+		const lampHeight = 0.5;
 		for (let i=0; i < lampCount; i++)
 		{
 			let position = lampsPositions.getPointAt(i/lampCount);

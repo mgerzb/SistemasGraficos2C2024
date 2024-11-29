@@ -794,7 +794,7 @@ export class RollerCoaster extends THREE.Object3D {
 		}
 		
 		const geometry = new ParametricGeometry( ParamFunc, 16, 25 );
-		const material = new THREE.MeshPhongMaterial({ color: 0x03fcec, flatShading: false, side: THREE.DoubleSide});
+		const material = new THREE.MeshPhongMaterial({ color: 0xffffff, flatShading: false, side: THREE.DoubleSide});
 		const mesh = new THREE.Mesh( geometry, material );
 		
         return mesh;

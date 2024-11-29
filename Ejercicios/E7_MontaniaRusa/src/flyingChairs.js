@@ -228,6 +228,7 @@ export class FlyingChairs extends THREE.Object3D {
     
     animate()
     {
+        return;
         const accelerationCheck = 20; // ms de espera para aplicar las modificaciones de velocidad
         
         if (this.lastUpdateTime == 0)
