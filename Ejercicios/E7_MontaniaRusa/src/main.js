@@ -9,7 +9,7 @@ import { SceneManager } from './sceneManager.js';
 import * as dat from 'dat.gui';
 import Stats from 'stats.js'
 
-let scene, renderer, trainBackRenderer, trainFrontRenderer, trainBackContainer, trainFronContainer, container, sceneManager;
+let scene, renderer, trainBackContainer, trainFronContainer, container, sceneManager;
 let fpvControls, orbitControls;
 let lastUpdateTime;
 let orbitCamera, fpvCamera;
@@ -75,8 +75,6 @@ function setupThreeJs() {
 
 	renderer = new THREE.WebGLRenderer();
 	renderer.shadowMap.enabled = true;
-	trainBackRenderer = new THREE.WebGLRenderer();
-	trainFrontRenderer = new THREE.WebGLRenderer();
 	scene = new THREE.Scene();
 
 	container.appendChild(renderer.domElement);

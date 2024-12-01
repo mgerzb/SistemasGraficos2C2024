@@ -13,6 +13,7 @@ import { Train } from './train.js';
 import { FlyingChairs } from './flyingChairs.js';
 import { LightManager} from './lightManager.js';
 import { StreetLamp } from './streetLamp.js';
+import { Pool } from './pool.js';
 
 import { vertexShader, fragmentShaderVars, fragmentShader } from '@shaders/shadersGround.js';
 
@@ -37,7 +38,8 @@ const textures = {
 	chbase: { url: 'chairsBase_base.jpg', object: null },
 	chbase_norm: { url: 'chairsBase_norm.jpg', object: null },
 	scaled_tunnel: { url: 'tunnelB_base.jpg', object: null },
-	scaled_tunnel_alpha: { url: 'tunnelB_alpha.jpg', object: null }
+	scaled_tunnel_alpha: { url: 'tunnelB_alpha.jpg', object: null },
+	water_norm: { url: 'water_norm.jpg', object: null}
 };
 
 export class SceneManager {
@@ -56,6 +58,11 @@ export class SceneManager {
 		scene.add(this.rollerCoaster);
 		
 		this.train = new Train();
+		
+		this.pool = new Pool(1.25, 2.2);
+		this.pool.position.set(-2.9, 0, 2.3);
+		
+		this.scene.add(this.pool);
 		
 		this.rollerCoaster.addTrain(this.train);
 		
@@ -141,11 +148,11 @@ export class SceneManager {
 			
 			let columns = this.rollerCoaster.getAllColumns();
 			columns.map((column)=>{
-				//column.material = new THREE.MeshPhongMaterial( {color: 0xffffff} ); //  Si no redefino el material, algunas columnas no cargan su textura
+				column.material = new THREE.MeshPhongMaterial( {color: 0xffffff, specular: 0x990000, shininess: 30} ); //  Si no redefino el material, algunas columnas no cargan su textura
 				column.material.map = textures.rust.object;
 				// this.rollerCoaster.rcMesh.material.roughness = 0.3;
 				// this.rollerCoaster.rcMesh.material.metalness =  1.0;
-				column.material.shininess= 4.0;
+				//column.material.shininess= 4.0;
 				column.material.normalMap = textures.rust_norm.object;
 				// column.material.roughnessMap = textures.rust_rough.object;
 				//column.material.metalness = textures.rust_metal.object;
@@ -213,6 +220,11 @@ export class SceneManager {
 			this.flyingChairs.base.material.normalMap = textures.chbase_norm.object;
 			//this.flyingChairs.base.material.color = 0xFFFFFF;
 			this.flyingChairs.base.material.needsUpdate = true;
+			
+			this.pool.water.material = new THREE.MeshStandardMaterial( {color: 0x000055, normalMap: textures.water_norm.object, envMap: reflection, roughness: 0.55});
+			// this.pool.water.material.normalMap = textures.water_norm.object;
+			// this.pool.water.material.envMap = reflection;
+			// this.pool.water.material.needsUpdate = true;
 			
 		});
 	}
@@ -384,5 +396,6 @@ export class SceneManager {
 	animate() {
 		this.rollerCoaster.animate();
 		this.flyingChairs.animate();
+		this.pool.animate();
 	}
 }
