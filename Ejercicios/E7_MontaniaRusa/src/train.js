@@ -15,11 +15,14 @@ export class Train extends THREE.Object3D {
         const length = 0.5;
         const width = 0.25;
         const escale = 0.5;
+        const specular = 0xffffff;
+        const shininess = 40;
+        const color = 0x00FF11;
         
         const ParamFunc = this.getPartsDrawingFunction(slices, dist, radius, length, width, escale, escale);
         
         const TopGeometry = new ParametricGeometry( ParamFunc, slices, 1);
-        const TopMaterial = new THREE.MeshPhongMaterial({ color: 0x00FF11, flatShading: false, wireframe: false, side: THREE.DoubleSide});
+        const TopMaterial = new THREE.MeshPhongMaterial({ color: color, flatShading: false, wireframe: false, side: THREE.DoubleSide, specular: specular, shininess: shininess});
         const Top = new THREE.Mesh( TopGeometry, TopMaterial );
         
         let End = Top.clone();
@@ -30,14 +33,14 @@ export class Train extends THREE.Object3D {
         const BodyFunc = this.getPartsDrawingFunction(slices, 0.8, radius, width, length,0,0, false);
         
         const BodyGeo = new ParametricGeometry( BodyFunc, slices, 1);
-        const BodyMaterial = new THREE.MeshPhongMaterial({ color: 0x00FF11, flatShading: false, wireframe: false, side: THREE.DoubleSide});
+        const BodyMaterial = new THREE.MeshPhongMaterial({ color: color, flatShading: false, wireframe: false, side: THREE.DoubleSide, specular: specular, shininess: shininess});
         const Body = new THREE.Mesh( BodyGeo, BodyMaterial );
         
         Body.position.z = -dist*2;
         Body.rotation.z = Math.PI/2;
         
         const CapGeometry = this.getCap(radius/2, length/2, width/2, 32);
-        const CapMaterial = new THREE.MeshPhongMaterial({ color: 0x00FF11, flatShading: false, wireframe: false, side: THREE.DoubleSide});
+        const CapMaterial = new THREE.MeshPhongMaterial({ color: color, flatShading: false, wireframe: false, side: THREE.DoubleSide, specular: specular, shininess: shininess});
         const FrontCap = new THREE.Mesh( CapGeometry, CapMaterial);
         const BackCap = new THREE.Mesh( CapGeometry, CapMaterial);
         

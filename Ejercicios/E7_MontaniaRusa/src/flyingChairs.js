@@ -14,7 +14,7 @@ export class FlyingChairs extends THREE.Object3D {
         
         this.properties = 
         {
-            segmentCount: 25,
+            segmentCount: 32,
             baseBigRadius: 0.18,
             baseMidRadius: 0.13,
             baseLowRadius: 0.08,
@@ -31,8 +31,8 @@ export class FlyingChairs extends THREE.Object3D {
             chairLen: 0.12,
             chairWid: 0.25,
             
-            baseColor: 0x36b2fa,
-            axisColor: 0xAAAAAA,
+            baseColor: 0xFFFFFF,//0x36b2fa,
+            axisColor: 0xFFFFFF,
             topColor: 0xf58b00,
             chainColor: 0x151515,
             
@@ -56,6 +56,10 @@ export class FlyingChairs extends THREE.Object3D {
         this.add(this.top);
         
         const chairCount = 10;
+        
+        // La base y el eje pueden recibir la sombra de las sillas
+        // this.base.receiveShadow = true;
+        // this.axis.receiveShadow = true;
         
         for (let i = 0; i < chairCount; i++)
         {
@@ -117,6 +121,7 @@ export class FlyingChairs extends THREE.Object3D {
         };
         
         const geometry = new ParametricGeometry( (u,v,target) => {shape(u, v, target, properties);}, this.properties.segmentCount, 20 );
+        geometry.computeVertexNormals();
         const material = new THREE.MeshPhongMaterial( { color: this.properties.baseColor } );
         const base = new THREE.Mesh( geometry, material );
 
@@ -146,17 +151,17 @@ export class FlyingChairs extends THREE.Object3D {
                 target.x = properties.baseLowRadius * Math.cos(2*Math.PI * (1-u));
                 target.z = properties.baseLowRadius * Math.sin(2*Math.PI * (1-u));
                 target.y = 0;
-            } else if (v <= 0.2)
-            {
-                target.x = (properties.baseLowRadius + (baseToTop) * (v/0.2)) * Math.cos(2*Math.PI * (1-u));
-                target.z = (properties.baseLowRadius + (baseToTop) * (v/0.2)) * Math.sin(2*Math.PI * (1-u));
-                
-                target.y = properties.topLength * (0.1 + v);
             } else if (v <= 0.8)
+            {
+                target.x = (properties.baseLowRadius + (baseToTop) * (v/0.8)) * Math.cos(2*Math.PI * (1-u));
+                target.z = (properties.baseLowRadius + (baseToTop) * (v/0.8)) * Math.sin(2*Math.PI * (1-u));
+                
+                target.y = properties.topLength * (0.1 + v/4);
+            } else if (v <= 0.99)
             {
                 target.x = properties.topWidth * Math.cos(2*Math.PI * (1-u));
                 target.z = properties.topWidth * Math.sin(2*Math.PI * (1-u));
-                target.y = properties.topLength * (0.1 + v);
+                target.y = properties.topLength * (0.1 + (v-0.8) * 4);
             } else
             {
                 target.x = 0;
@@ -165,7 +170,7 @@ export class FlyingChairs extends THREE.Object3D {
             }
         }
         
-        const geometry = new ParametricGeometry( (u,v,target) => {shape(u, v, target, this.properties);}, this.properties.segmentCount, 10 );
+        const geometry = new ParametricGeometry( (u,v,target) => {shape(u, v, target, this.properties);}, this.properties.segmentCount, 20 );
         geometry.computeVertexNormals();
         const material = new THREE.MeshPhongMaterial( { color: this.properties.topColor, wireframe: false} );
         const top = new THREE.Mesh( geometry, material );
@@ -178,7 +183,7 @@ export class FlyingChairs extends THREE.Object3D {
     createChainChair()
     {
         const chainGeometry = new THREE.CylinderGeometry( this.properties.chainRad, this.properties.chainRad, this.properties.chainLen, 32 );
-        chainGeometry.translate(0,-this.properties.chainLen/2, 0);
+        chainGeometry.translate(0,-this.properties.chainLen/2, -0.02);  // La corrección en Z es para corregir la alineación con la silla
         const chainMaterial = new THREE.MeshPhongMaterial( {color: this.properties.chainColor} ); 
         const chain = new THREE.Mesh( chainGeometry, chainMaterial );;
         
@@ -228,7 +233,6 @@ export class FlyingChairs extends THREE.Object3D {
     
     animate()
     {
-        return;
         const accelerationCheck = 20; // ms de espera para aplicar las modificaciones de velocidad
         
         if (this.lastUpdateTime == 0)

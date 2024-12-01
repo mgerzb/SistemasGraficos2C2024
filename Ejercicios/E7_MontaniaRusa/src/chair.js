@@ -68,23 +68,23 @@ export class Chair extends THREE.Object3D {
         chairGeometry.computeVertexNormals();
         chairGeometry.translate(translate);
         
-        const chairMaterial = new THREE.MeshPhongMaterial( { color: color, wireframe: false, side: THREE.DoubleSide} );
-        const chair = new THREE.Mesh( chairGeometry, chairMaterial );
+        const chairMaterial = new THREE.MeshPhongMaterial( { color: color, wireframe: false, side: THREE.DoubleSide, specular: 0xffffff, shininess: 30} );
+        this.chair = new THREE.Mesh( chairGeometry, chairMaterial );
         
         let bottonCapTranslate = translate.clone();
-        let cap = this.buildCap(points, THREE.FrontSide, translate);
-        let bottomCap = this.buildCap(points, THREE.BackSide, translate);
+        this.cap = this.buildCap(points, THREE.FrontSide, translate, color);
+        this.bottomCap = this.buildCap(points, THREE.BackSide, translate, color);
         
-        bottomCap.position.z = this.width;
+        this.bottomCap.position.z = this.width;
         
-        chair.add(cap);
-        chair.add(bottomCap);
+        this.chair.add(this.cap);
+        this.chair.add(this.bottomCap);
         
-        return chair;
+        this.add(this.chair);
     }
     
     // Tapa del extremo del asiento
-    buildCap(points, side, translate)
+    buildCap(points, side, translate, color)
     {
         let startVector = new THREE.Vector3();
         let endVector = new THREE.Vector3();
@@ -113,7 +113,7 @@ export class Chair extends THREE.Object3D {
         const capGeometry = new ParametricGeometry( (u,v,target) => {shape(u, v, target, this);}, 12, 10 );
         capGeometry.computeVertexNormals();
         capGeometry.translate(translate);
-        const capMaterial = new THREE.MeshPhongMaterial( { color: 0xf58b00, wireframe: false, side: side} );
+        const capMaterial = new THREE.MeshPhongMaterial( { color: color, wireframe: false, side: side, specular: 0xffffff, shininess: 30} );
         const cap = new THREE.Mesh( capGeometry, capMaterial );
         
         return cap;

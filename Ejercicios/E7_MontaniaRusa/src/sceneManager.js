@@ -33,6 +33,9 @@ const textures = {
 	rail_ao:  { url: 'rail_ao.jpg', object: null },
 	rail_norm:  { url: 'rail_normal.jpg', object: null },
 	chtop: { url: 'chairsTop_base.png', object: null },
+	chcol: { url: 'chairsCol_base.png', object: null },
+	chbase: { url: 'chairsBase_base.jpg', object: null },
+	chbase_norm: { url: 'chairsBase_norm.jpg', object: null },
 	scaled_tunnel: { url: 'tunnelB_base.jpg', object: null },
 	scaled_tunnel_alpha: { url: 'tunnelB_alpha.jpg', object: null }
 };
@@ -138,16 +141,17 @@ export class SceneManager {
 			
 			let columns = this.rollerCoaster.getAllColumns();
 			columns.map((column)=>{
-				column.material = new THREE.MeshPhongMaterial( {color: 0xffffff} ); //  Si no redefino el material, algunas columnas no cargan su textura
+				//column.material = new THREE.MeshPhongMaterial( {color: 0xffffff} ); //  Si no redefino el material, algunas columnas no cargan su textura
 				column.material.map = textures.rust.object;
 				// this.rollerCoaster.rcMesh.material.roughness = 0.3;
 				// this.rollerCoaster.rcMesh.material.metalness =  1.0;
-				column.material.shininess= 30.0;
+				column.material.shininess= 4.0;
 				column.material.normalMap = textures.rust_norm.object;
 				// column.material.roughnessMap = textures.rust_rough.object;
 				//column.material.metalness = textures.rust_metal.object;
-				column.material.aoMap = textures.rust_ao.object;
-				//column.material.specular = 0xAA0000;
+				// column.material.aoMap = textures.rust_ao.object;
+				column.material.needsUpdate = true;
+				//column.material.specular = 0xFFFFFF;
 				// column.material.envMap = reflection;
 				// column.material.envMapIntensity = 0;
 				// column.material.reflectivy = 0;
@@ -193,12 +197,23 @@ export class SceneManager {
 			// this.rollerCoaster.rcMesh.material.shininess = 80.0;
 			
 			// Rotamos la textura para que se alinee al con los u,v
+			textures.chtop.object.center = new THREE.Vector2(0.5,0.5);
 			textures.chtop.object.rotation = Math.PI/2;
-			textures.chtop.object.repeat = new THREE.Vector2(0.7,1);
 			
+			textures.chcol.object.repeat = new THREE.Vector2(3, 1);
+			//textures.chtop.object.repeat = new THREE.Vector2(0.5,1);
+			//textures.chtop.object.offset = new THREE.Vector2(-0.25,0);
 			this.flyingChairs.top.material = new THREE.MeshPhongMaterial( {color: 0xffffff, wireframe: false} );
 			this.flyingChairs.top.material.map = textures.chtop.object;
-
+			
+			this.flyingChairs.axis.material.map = textures.chcol.object;
+			this.flyingChairs.axis.material.needsUpdate = true;
+			
+			this.flyingChairs.base.material.map = textures.chbase.object;
+			this.flyingChairs.base.material.normalMap = textures.chbase_norm.object;
+			//this.flyingChairs.base.material.color = 0xFFFFFF;
+			this.flyingChairs.base.material.needsUpdate = true;
+			
 		});
 	}
 	
@@ -223,7 +238,7 @@ export class SceneManager {
 	}
 	
 	onTextureLoaded(key, texture) {
-		if (key != "sendero") // Para el sendero dejamos se repita el ultimo pixel
+		if (key != "sendero" && key != "chtop") // Para el sendero dejamos se repita el ultimo pixel
 			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 		textures[key].object = texture;
 		console.log(`Texture ${key} loaded`);
