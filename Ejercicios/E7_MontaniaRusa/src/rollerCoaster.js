@@ -195,7 +195,7 @@ export class RollerCoaster extends THREE.Object3D {
         curve.add(
             new THREE.QuadraticBezierCurve3(
                 new THREE.Vector3(-3.3, 0.3, -2 ),
-                new THREE.Vector3(-2, 0.27, -1.5),
+                new THREE.Vector3(-2, 0.3, -1.5),
                 new THREE.Vector3(-2, 0.3, 2)
                 ));
         
@@ -204,6 +204,16 @@ export class RollerCoaster extends THREE.Object3D {
         curve.updateArcLengths();
         
         let ff = curve.computeFrenetFrames(POINTS, true);
+        
+        // Matriz para proyectar la normal sobre el plano xz
+        let normalProjectionMatrix= new THREE.Matrix3();
+        normalProjectionMatrix.set(1,0,0, 0,0,0, 0,0,1);
+
+        ff.normals.map((normal) =>
+        {
+            normal.applyMatrix3(normalProjectionMatrix);
+            normal.normalize();
+        });
         
         this.railCurve = curve;
         this.frenetFrames = ff;
@@ -268,12 +278,12 @@ export class RollerCoaster extends THREE.Object3D {
         const ffposition = this.trainPosition / 8;//currentCurvePosition; * (this.frenetFrames.normals.length - 1)
         // Promedio de la normal
         let frameNormals = frames.normals[Math.floor(ffposition)].clone();
-        let frameBinormals = frames.binormals[Math.floor(ffposition)].clone();
+        let frameBinormals = new THREE.Vector3();
         let frameTangents = frames.tangents[Math.floor(ffposition)].clone();
         
         frameNormals.lerp(frames.normals[Math.ceil(ffposition)], ffposition - Math.floor(ffposition));
-        frameBinormals.lerp(frames.binormals[Math.ceil(ffposition)], ffposition - Math.floor(ffposition));
         frameTangents.lerp(frames.tangents[Math.ceil(ffposition)], ffposition - Math.floor(ffposition));
+        frameBinormals.crossVectors(frameTangents, frameNormals);
         
         let rotation = new THREE.Matrix4();
         rotation.makeRotationX(Math.PI);
@@ -573,7 +583,7 @@ export class RollerCoaster extends THREE.Object3D {
     createRailsMesh(curve, frames)
     {        
         // Obtenemos la forma de las vias
-        let rectangle = this.getTrackShape();
+        let trackShape = this.getTrackShape();
         
         // Funcion que va a crear el mapeo de la forma de la via a 3D
         let ParamFunc = function (u, v, target) {
@@ -589,37 +599,52 @@ export class RollerCoaster extends THREE.Object3D {
             
             scale.makeScale(0.5,0.75,0.75);
             rotation.makeRotationZ(Math.PI);
-            target.copy(rectangle.getPointAt(u));
+            target.copy(trackShape.getPointAt(u));
+            
+            // if (v == 1.0)
+            //     v = 0;
             
             let position = curve.getPointAt(v);
             
+            if (v == 1.0)
+                position = curve.getPointAt(0);
+            
             let frpos = Math.floor((POINTS) * v);
+            let frpos_next = Math.ceil((POINTS) * v);
             
             // Cuando estamos en el último punto de la curva forzamos
             // que el valor de la tangente y normal sean los que se usaron al inicio de la curva
             // FIXME Esto no esta funcionando como corresponde, probablemente necesitamos promediar con lerp
-            if (v == POINTS)
-                frpos = 0;
+            // if (v == 1.0)
+            // {
+            //     frpos = 0;
+            //     frpos_next = 1;
+            // }
+            
+            // Promedio de frenet frames a usar
+            let topFrameNormals = new THREE.Vector3().lerpVectors(frames.normals[frpos],frames.normals[frpos_next], (POINTS * v) - Math.floor((POINTS) * v));
+            let topFrameTangents = new THREE.Vector3().lerpVectors(frames.tangents[frpos], frames.tangents[frpos_next], (POINTS * v) - Math.floor((POINTS) * v));
+            let topFrameBinormals = new THREE.Vector3().lerpVectors(frames.binormals[frpos], frames.binormals[frpos_next], (POINTS * v) - Math.floor((POINTS) * v));
             
             target.applyMatrix4(scale);
             target.applyMatrix4(rotation);
         
-            frames.normals[frpos].applyMatrix3(normalProjectionMatrix);
-            frames.normals[frpos].normalize();
-            frames.binormals[frpos].crossVectors(frames.tangents[frpos], frames.normals[frpos]);
-            frames.binormals[frpos].normalize();
+            topFrameNormals.applyMatrix3(normalProjectionMatrix);
+            topFrameNormals.normalize();
+            topFrameBinormals.crossVectors(topFrameTangents, topFrameNormals);
+            topFrameBinormals.normalize();
             
-            m.set(  frames.normals[frpos].x,frames.binormals[frpos].x, frames.tangents[frpos].x, position.x, 
-                    frames.normals[frpos].y,frames.binormals[frpos].y, frames.tangents[frpos].y, position.y,
-                    frames.normals[frpos].z,frames.binormals[frpos].z, frames.tangents[frpos].z, position.z, 
+            m.set(  topFrameNormals.x,topFrameBinormals.x, topFrameTangents.x, position.x, 
+                    topFrameNormals.y,topFrameBinormals.y, topFrameTangents.y, position.y,
+                    topFrameNormals.z,topFrameBinormals.z, topFrameTangents.z, position.z, 
                   0, 0, 0, 1 );
             
             target.applyMatrix4(m);
             //target.applyMatrix4(scale);
         }
         
-        const geometry = new ParametricGeometry( ParamFunc, 20, POINTS -1);
-        geometry.computeVertexNormals();
+        const geometry = new ParametricGeometry( ParamFunc, 40, POINTS);
+        //geometry.computeVertexNormals();
         const material = new THREE.MeshPhongMaterial({ color: 0xffffff, flatShading: false, wireframe: false});
         const mesh = new THREE.Mesh( geometry, material );
         
@@ -717,7 +742,7 @@ export class RollerCoaster extends THREE.Object3D {
                         raycaster.set(currentPos, new THREE.Vector3(0, 1, 0));
                         const validIntersections = this.removeInvalidRayIntersections(intersects, columnHeight.y);
                         
-                        if (topMinHeight > validIntersections[0].distance)
+                        if (validIntersections.length > 0 && topMinHeight > validIntersections[0].distance)
                             topMinHeight = validIntersections[0].distance;
                     }
                     

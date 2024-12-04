@@ -39,7 +39,9 @@ const textures = {
 	chbase_norm: { url: 'chairsBase_norm.jpg', object: null },
 	scaled_tunnel: { url: 'tunnelB_base.jpg', object: null },
 	scaled_tunnel_alpha: { url: 'tunnelB_alpha.jpg', object: null },
-	water_norm: { url: 'water_norm.jpg', object: null}
+	water_norm: { url: 'water_norm.jpg', object: null},
+	conc_norm: { url: 'concrete_norm.jpg', object: null},
+	conc_base: { url: 'concrete_base.jpg', object: null}
 };
 
 export class SceneManager {
@@ -60,7 +62,7 @@ export class SceneManager {
 		this.train = new Train();
 		
 		this.pool = new Pool(1.25, 2.2);
-		this.pool.position.set(-2.9, 0, 2.3);
+		this.pool.position.set(-3, 0, 2.3);
 		
 		this.scene.add(this.pool);
 		
@@ -150,20 +152,8 @@ export class SceneManager {
 			columns.map((column)=>{
 				column.material = new THREE.MeshPhongMaterial( {color: 0xffffff, specular: 0x990000, shininess: 30} ); //  Si no redefino el material, algunas columnas no cargan su textura
 				column.material.map = textures.rust.object;
-				// this.rollerCoaster.rcMesh.material.roughness = 0.3;
-				// this.rollerCoaster.rcMesh.material.metalness =  1.0;
-				//column.material.shininess= 4.0;
 				column.material.normalMap = textures.rust_norm.object;
-				// column.material.roughnessMap = textures.rust_rough.object;
-				//column.material.metalness = textures.rust_metal.object;
-				// column.material.aoMap = textures.rust_ao.object;
 				column.material.needsUpdate = true;
-				//column.material.specular = 0xFFFFFF;
-				// column.material.envMap = reflection;
-				// column.material.envMapIntensity = 0;
-				// column.material.reflectivy = 0;
-				// const helper = new VertexNormalsHelper( column, 0.2, 0xff0000 );
-				// this.scene.add(helper);
 				
 			});
 			
@@ -201,15 +191,12 @@ export class SceneManager {
 			this.rollerCoaster.rcMesh.material.map = textures.rail.object;
 			this.rollerCoaster.rcMesh.material.aoMap = textures.rail_ao.object;
 			this.rollerCoaster.rcMesh.material.normalMap = textures.rail_norm.object;
-			// this.rollerCoaster.rcMesh.material.shininess = 80.0;
 			
 			// Rotamos la textura para que se alinee al con los u,v
 			textures.chtop.object.center = new THREE.Vector2(0.5,0.5);
 			textures.chtop.object.rotation = Math.PI/2;
 			
 			textures.chcol.object.repeat = new THREE.Vector2(3, 1);
-			//textures.chtop.object.repeat = new THREE.Vector2(0.5,1);
-			//textures.chtop.object.offset = new THREE.Vector2(-0.25,0);
 			this.flyingChairs.top.material = new THREE.MeshPhongMaterial( {color: 0xffffff, wireframe: false} );
 			this.flyingChairs.top.material.map = textures.chtop.object;
 			
@@ -218,13 +205,26 @@ export class SceneManager {
 			
 			this.flyingChairs.base.material.map = textures.chbase.object;
 			this.flyingChairs.base.material.normalMap = textures.chbase_norm.object;
-			//this.flyingChairs.base.material.color = 0xFFFFFF;
 			this.flyingChairs.base.material.needsUpdate = true;
 			
-			this.pool.water.material = new THREE.MeshStandardMaterial( {color: 0x000055, normalMap: textures.water_norm.object, envMap: reflection, roughness: 0.55});
-			// this.pool.water.material.normalMap = textures.water_norm.object;
-			// this.pool.water.material.envMap = reflection;
-			// this.pool.water.material.needsUpdate = true;
+			let cubeRenderTarget = new THREE.WebGLCubeRenderTarget( 256 );
+			cubeRenderTarget.texture.type = THREE.HalfFloatType;
+
+			let cubeCamera = new THREE.CubeCamera( 1, 1000, cubeRenderTarget );
+			cubeCamera.position.set(-1, 0.5, 3);
+			textures.conc_base.object.repeat = textures.conc_norm.object.repeat = new THREE.Vector2(1,1);
+			 
+			this.pool.water.material = new THREE.MeshStandardMaterial( {
+				color: 0x000088, 
+				normalMap: textures.water_norm.object, 
+				envMap: reflection, 
+				roughness: 0.35, metalness: 0.0, transparent: true, opacity: 0.4});
+			this.pool.borders.children.map((obj) => 
+			{ 
+				obj.material.map = textures.conc_base.object;
+				obj.material.normalMap = textures.conc_norm.object;
+				obj.material.needsUpdate = true;
+			});
 			
 		});
 	}
@@ -365,19 +365,20 @@ export class SceneManager {
 	addStreetLamps()
 	{
 		const lampsPositions = new THREE.CatmullRomCurve3( [
-			new THREE.Vector3( -3, 0, -5 ),
-														   new THREE.Vector3( -0.5, 0, -3 ),
-														   new THREE.Vector3( -0.75, 0, 0 ),
-														   new THREE.Vector3( 2, 0, 2.5 ),
-														   new THREE.Vector3( 2.5, 0, 5 ),
-														   new THREE.Vector3( 2, 0, 9 ),
-														   new THREE.Vector3( -0.5, 0, 11.5 ),
-														   new THREE.Vector3( -6, 0, 8 ),
-														   new THREE.Vector3( -6, 0, 3 ),
-														   new THREE.Vector3( -6.5, 0, 0 ),
-														   new THREE.Vector3( -6, 0, -2 ),
+			new THREE.Vector3( -3, 0, -4.8 ),
+														   new THREE.Vector3( 2.0, 0, -3.3 ),
+														   new THREE.Vector3( 2.9, 0, 0 ),
+														   new THREE.Vector3( 1.5, 0, 2.5 ),
+														   new THREE.Vector3( 1.8, 0, 5.0 ),
+														   new THREE.Vector3( 3.0, 0, 9 ),
+														   new THREE.Vector3( -0.3, 0, 12.7 ),
+														   new THREE.Vector3( -6, 0, 11 ),
+														   new THREE.Vector3( -4.5, 0, 3 ),
+														   new THREE.Vector3( -4.1, 0, 0 ),
+														   new THREE.Vector3( -5, 0, -2 ),
 														   new THREE.Vector3( -4, 0, -4.5 )
 		] );
+
 		
 		const lampCount = 15;
 		const lampHeight = 0.5;

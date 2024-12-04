@@ -109,7 +109,7 @@ function setupThreeJs() {
 	fpvControls.movementSpeed = 0.5;
 	fpvControls.enabled = false;
 	
-	cameras = [orbitCamera, fpvCamera, trainCameraBack, trainCameraFront, trainCameraSide, flyingChairCamera, orbitCamera, orbitCamera];
+	cameras = [orbitCamera, fpvCamera, trainCameraFront, trainCameraBack, trainCameraSide, flyingChairCamera, orbitCamera, orbitCamera];
 
 	window.addEventListener('resize', onResize);
 	document.addEventListener('keydown', onKeyPress);
