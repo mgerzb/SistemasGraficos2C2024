@@ -102,6 +102,7 @@ function setupThreeJs() {
 	
 	// Posiciones para la camara orbital de cada atracción
 	orbitControls = new OrbitControls(orbitCamera, renderer.domElement);
+	orbitControls.maxPolarAngle = Math.PI/2 - 0.022; // Evita que la camara pase por debajo del suelo
 	orbitControls.enablePan = false;
 	
 	fpvControls = new FixedFPVControls(fpvCamera, renderer.domElement);
@@ -120,6 +121,9 @@ function setupThreeJs() {
 	cameraOptionsController = setupCameraOptions(gui);
 	sceneManager.setupUI(gui);
 	
+	scene.add(fpvCamera);
+	sceneManager.sceneLights.addLightToFPV(fpvCamera);
+	
 	lastUpdateTime = Date.now();
 	
 	stats.showPanel(0) 
@@ -137,6 +141,9 @@ function onKeyPress(event)
 	{
 		case 'c':
 			SwitchCamera();
+			break;
+		case 'i':
+			sceneManager.sceneLights.switchFPVLight();
 			break;
 	}
 }

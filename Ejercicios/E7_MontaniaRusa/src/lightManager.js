@@ -25,7 +25,18 @@ export class LightManager {
             },
             
             shadowNear: 0.5,
-            shadowFar: 80
+            shadowFar: 80,
+            
+            spotShadowMap:
+            {
+                w:1024,
+                h:1024
+            },
+            
+            spotColor: 0xffffff,
+            spotDistance: 15,
+            spotPenumbra: 0.3,
+            spotAngle: Math.PI/8
         };
         
         this.scene = scene;
@@ -102,6 +113,25 @@ export class LightManager {
         light.position.set(0, lamp.height, 0);
         
         lamp.add(light);
+    }
+    
+    addLightToFPV(camera)
+    {
+        this.fpvLight = new THREE.SpotLight(this.properties.spotColor, 0.0, this.properties.spotDistance, this.properties.spotAngle, this.properties.spotPenumbra);
+        this.fpvLight.position.set(0,0.25,0.5); // Posición de la linterna
+        this.fpvLight.target.position.set(0,0,-1); // dirección a la que apunta por defecto
+        this.scene.add(this.fpvLight);
+        
+        camera.add(this.fpvLight);
+        camera.add(this.fpvLight.target);
+    }
+    
+    switchFPVLight()
+    {
+        if (this.fpvLight)
+        {
+            this.fpvLight.intensity = this.fpvLight.intensity > 0? 0.0: 1.0;
+        }
     }
     
     initSky() {
