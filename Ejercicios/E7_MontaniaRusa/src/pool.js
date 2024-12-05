@@ -7,7 +7,7 @@ export class Pool extends THREE.Object3D
         super();
         const height = 0.1;
         const bordersSize = 0.1;
-        const borderColor = 0xffffff;//0x777777;
+        const borderColor = 0x999999;
         
         
         const waterGeo = new THREE.PlaneGeometry( width - bordersSize, length - bordersSize );
@@ -27,19 +27,19 @@ export class Pool extends THREE.Object3D
         
         const borderMaterial = new THREE.MeshPhongMaterial( {color: borderColor} );
         
-        const geoA = new THREE.BoxGeometry( bordersSize, height, length );
+        const geoA = new THREE.BoxGeometry( bordersSize, height, length + bordersSize);
         geoA.translate(width/2 - bordersSize/2 , height/2, 0);
         const borderA = new THREE.Mesh(geoA, borderMaterial);
         
-        const geoB = new THREE.BoxGeometry( width, height, bordersSize );
+        const geoB = new THREE.BoxGeometry( width - bordersSize * 2, height, bordersSize );
         geoB.translate(0, height/2, length/2)
         const borderB = new THREE.Mesh(geoB, borderMaterial);
         
-        const geoC = new THREE.BoxGeometry( bordersSize, height, length );
+        const geoC = new THREE.BoxGeometry( bordersSize, height, length + bordersSize);
         geoC.translate(-width/2 + bordersSize/2 , height/2, 0);
         const borderC = new THREE.Mesh(geoC, borderMaterial);
         
-        const geoD = new THREE.BoxGeometry( width, height, bordersSize );
+        const geoD = new THREE.BoxGeometry( width - bordersSize * 2, height, bordersSize );
         geoD.translate(0, height/2, -length/2)
         const borderD = new THREE.Mesh(geoD, borderMaterial);
         

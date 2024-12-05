@@ -41,7 +41,9 @@ const textures = {
 	scaled_tunnel_alpha: { url: 'tunnelB_alpha.jpg', object: null },
 	water_norm: { url: 'water_norm.jpg', object: null},
 	conc_norm: { url: 'concrete_norm.jpg', object: null},
-	conc_base: { url: 'concrete_base.jpg', object: null}
+	conc_base: { url: 'concrete_base.jpg', object: null},
+	poolfloor_norm: { url: 'poolfloor_norm.jpg', object: null},
+	poolfloor_base: { url: 'poolfloor_base.jpg', object: null}
 };
 
 export class SceneManager {
@@ -86,8 +88,8 @@ export class SceneManager {
 		
 		this.properties =
 		{
-			showGrid: true,
-			showAxes: true,
+			showGrid: false,
+			showAxes: false,
 			showRLNormals: false,
 			showRLTangents: false,
 			showRLBinormals: false,
@@ -214,17 +216,23 @@ export class SceneManager {
 			cubeCamera.position.set(-1, 0.5, 3);
 			textures.conc_base.object.repeat = textures.conc_norm.object.repeat = new THREE.Vector2(1,1);
 			 
+			
 			this.pool.water.material = new THREE.MeshStandardMaterial( {
 				color: 0x000088, 
 				normalMap: textures.water_norm.object, 
 				envMap: reflection, 
 				roughness: 0.35, metalness: 0.0, transparent: true, opacity: 0.4});
-			this.pool.borders.children.map((obj) => 
-			{ 
-				obj.material.map = textures.conc_base.object;
-				obj.material.normalMap = textures.conc_norm.object;
-				obj.material.needsUpdate = true;
-			});
+			
+			textures.conc_base.object.repeat = new THREE.Vector2(8,1);
+			textures.conc_norm.object.repeat = new THREE.Vector2(8,1);
+			
+			textures.poolfloor_base.object.repeat = new THREE.Vector2(4,6);
+			textures.poolfloor_norm.object.repeat = new THREE.Vector2(4,6);
+			this.pool.base.material = new THREE.MeshPhongMaterial( {
+				color: 0xffffff,
+				map: textures.poolfloor_base.object,
+				normalMap: textures.poolfloor_norm.object, 
+				roughness: 0.8, metalness: 0.0});
 			
 		});
 	}
@@ -298,6 +306,9 @@ export class SceneManager {
 		this.setupWorldHelpers(f1);
 		this.setupRLHelpers(f1);
 		
+		let f2 = gui.addFolder('Sun');
+		f2.add(this.sceneLights.effectController, 'elevation', -180, 180, 0.1).name('SunElevation').onChange((value) => {this.sceneLights.skyChanged();});
+		
 	}
 	
 	setupWorldHelpers(f1)
@@ -319,8 +330,7 @@ export class SceneManager {
 		f2.add(this.sceneLights.properties, 'shadowCamHelper')
 			.name('Shadows')
 			.onChange((value) => {this.sceneLights.showShadowHelper(value);});
-			
-		f2.add(this.sceneLights.effectController, 'elevation', -180, 180, 0.1).name('SunElevation').onChange((value) => {this.sceneLights.skyChanged();});
+
 	}
 	
 	setupRLHelpers(f1)
